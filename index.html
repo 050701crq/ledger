@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#F4F6FB">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>我的账本</title>
+<style>
+:root{
+  --bg:#F4F6FB;--card:#FFF;--ink:#101828;--ink2:#344054;--mut:#98A2B3;--line:#EFF2F7;
+  --navy:#0F172A;--navy2:#26355C;--blue:#3B82F6;--green:#12B76A;--red:#F04438;
+  --amber:#F79009;--violet:#7A5AF8;
+  --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
+  --shadow-lg:0 8px 32px rgba(16,24,40,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);padding-bottom:calc(104px + env(safe-area-inset-bottom));
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  overscroll-behavior-y:contain;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+input{font:inherit;color:inherit}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{display:none}
+
+.topbar{position:sticky;top:0;z-index:30;padding:calc(env(safe-area-inset-top) + 8px) 16px 8px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:linear-gradient(180deg,var(--bg) 70%,rgba(244,246,251,0));backdrop-filter:blur(8px)}
+.mo{display:flex;align-items:center;gap:2px}
+.mo button{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--ink2);font-size:15px}
+.mo button:active{background:#E9EDF5}
+.mo .t{font-size:16px;font-weight:700;letter-spacing:-.2px;padding:0 4px;min-width:92px;text-align:center}
+.topact{display:flex;gap:6px;align-items:center}
+.chipnet{background:#fff;border-radius:11px;padding:6px 11px;box-shadow:var(--shadow);font-size:12px;color:var(--ink2);font-weight:600}
+.chipnet b{font-variant-numeric:tabular-nums;color:var(--ink)}
+
+main{padding:2px 14px 12px}
+.screen{display:none}
+.screen.on{display:block;animation:fade .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.h b{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.h .sub{font-size:11.5px;color:var(--mut);font-weight:500}
+.mini{font-size:11.5px;color:var(--mut);line-height:1.55}
+.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:18px 18px 16px;margin-bottom:12px;
+  background:linear-gradient(135deg,#1B2A4A 0%,#2C3E68 55%,#344B7C 100%);color:#fff;
+  box-shadow:0 10px 30px rgba(23,37,64,.28)}
+.hero:after{content:"";position:absolute;right:-46px;top:-72px;width:190px;height:190px;border-radius:50%;background:rgba(96,165,250,.20)}
+.hero:before{content:"";position:absolute;left:-40px;bottom:-84px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.05)}
+.hero .lbl{font-size:11.5px;opacity:.72;letter-spacing:1px;margin-bottom:4px}
+.hero .big{font-size:34px;font-weight:750;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;line-height:1.15}
+.hero .big small{font-size:17px;font-weight:600;opacity:.85;margin-right:3px}
+.hero .row2{display:flex;gap:8px;margin-top:14px;position:relative;z-index:1}
+.pill{flex:1;background:rgba(255,255,255,.12);border-radius:13px;padding:8px 10px}
+.pill small{display:block;font-size:10.5px;opacity:.72;margin-bottom:1px}
+.pill b{font-size:14.5px;font-weight:650;font-variant-numeric:tabular-nums}
+.hero .foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:11.5px;opacity:.8;position:relative;z-index:1}
+
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.quick button{background:#fff;border-radius:16px;padding:11px 8px;box-shadow:var(--shadow);text-align:center}
+.quick button:active{transform:scale(.97)}
+.quick .ic{font-size:17px;line-height:1;margin-bottom:5px;display:block}
+.quick .t{font-size:11px;color:var(--mut);margin-bottom:1px}
+.quick .v{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
+
+.seg{display:flex;background:#EDF0F6;border-radius:12px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;padding:7px 0;border-radius:9px;font-size:13px;color:#667085;font-weight:600;transition:.18s}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(16,24,40,.12)}
+
+.daysep{display:flex;justify-content:space-between;align-items:center;padding:14px 4px 6px;font-size:11.5px;color:var(--mut);font-weight:600}
+.daysep span:last-child{font-variant-numeric:tabular-nums}
+.li{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.cico{width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto;background:#F4F6FB}
+.li .l{flex:1;min-width:0}
+.li .l b{display:block;font-size:14px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .l .s{font-size:11px;color:var(--mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .amt{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.li .amt.inc{color:var(--green)}
+.empty{text-align:center;padding:34px 0;color:var(--mut);font-size:13px}
+.empty .big{font-size:34px;display:block;margin-bottom:10px;opacity:.5}
+
+.bar{height:7px;border-radius:6px;background:#EEF1F6;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:6px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.catrow{padding:12px 0;border-bottom:1px solid var(--line)}
+.catrow:last-child{border-bottom:0;padding-bottom:0}
+.catrow .t{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
+.catrow .t b{font-size:14px;font-weight:650}
+.catrow .t .v{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.catrow .t .v em{font-style:normal;font-weight:700}
+.subrow{display:flex;justify-content:space-between;padding:6px 0 6px 12px;font-size:12.5px;border-left:2px solid var(--line);margin-left:2px}
+.subrow span:last-child{font-variant-numeric:tabular-nums;color:var(--ink2)}
+
+.ringwrap{display:flex;align-items:center;gap:18px}
+.ring{width:120px;height:120px;flex:0 0 auto;position:relative}
+.ring .cl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .cl b{font-size:21px;font-weight:750;letter-spacing:-.6px;font-variant-numeric:tabular-nums}
+.ring .cl small{font-size:10.5px;color:var(--mut);margin-top:1px}
+.ringside{flex:1;display:flex;flex-direction:column;gap:9px}
+.ringside .it{display:flex;justify-content:space-between;font-size:12.5px}
+.ringside .it b{font-variant-numeric:tabular-nums;font-weight:700}
+
+.donut{width:126px;height:126px;flex:0 0 auto}
+.legend{display:flex;flex-direction:column;gap:7px;font-size:12px;flex:1;min-width:0}
+.legend div{display:flex;align-items:center;gap:7px}
+.legend .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.legend .pv{font-variant-numeric:tabular-nums;color:var(--mut);font-size:11.5px}
+.dot{width:8px;height:8px;border-radius:3px;flex:0 0 auto}
+.donutwrap{display:flex;align-items:center;gap:16px}
+
+.acct{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.acct:last-of-type{border-bottom:0}
+.acct .nm{font-size:14px;font-weight:600}
+.acct .sub{font-size:10.5px;color:var(--mut);margin-top:1px}
+.acct .val{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.acct .val.neg{color:var(--red)}
+.acct.new{justify-content:center;color:var(--blue);font-size:13px;font-weight:650;padding:12px 0}
+.acct.new:active{background:#F4F7FF;border-radius:12px}
+.tot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;font-weight:650;font-size:13.5px}
+.tot .big{font-size:17px;font-variant-numeric:tabular-nums}
+
+.trow{padding:12px 0;border-bottom:1px solid var(--line)}
+.trow:last-child{border-bottom:0}
+.trow .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
+.trow .nm{font-size:14px;font-weight:650}
+.trow .vv{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
+.tgcard{text-align:center;padding:8px 2px;border-radius:14px}
+.tgcard:active{background:#F7F9FC}
+.ringsmall{width:58px;height:58px;display:block;margin:0 auto}
+.ringwrap2{position:relative;width:58px;height:58px;margin:0 auto}
+.ringtxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.ringtxt.dim{color:#C3CAD6;font-weight:500;font-size:14px}
+.tgname{font-size:11px;margin-top:5px;color:var(--ink2);font-weight:600}
+.tgval{font-size:9.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#F7F9FC;border-radius:14px;padding:11px 13px}
+.kpi span{font-size:10.5px;color:var(--mut);display:block}
+.kpi b{font-size:20px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+
+nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);
+  background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(16,24,40,.06);
+  padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+nav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#98A2B3;font-weight:600;padding:4px 0}
+nav .nb .ic{font-size:19px;line-height:1;filter:grayscale(1);opacity:.42;transition:.16s}
+nav .nb.on{color:var(--navy)}
+nav .nb.on .ic{filter:none;opacity:1;transform:translateY(-1px)}
+nav .fab{width:52px;height:52px;border-radius:50%;margin:0 auto;align-self:center;
+  transform:translateY(-13px);background:linear-gradient(135deg,#2C3E68,#1B2A4A);color:#fff;
+  font-size:26px;font-weight:300;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 22px rgba(23,37,64,.34);border:3px solid #fff;transition:.15s}
+nav .fab:active{transform:translateY(-13px) scale(.94)}
+
+.modal{position:fixed;inset:0;z-index:95;display:none;align-items:flex-end;justify-content:center;
+  background:rgba(15,23,42,.44);backdrop-filter:blur(2px)}
+.modal.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:560px;border-radius:22px 22px 0 0;
+  padding:18px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;
+  animation:up .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(26px);opacity:.6}to{transform:none;opacity:1}}
+.sheet h3{margin:0 0 14px;font-size:16.5px;font-weight:700}
+.sheet .grab{width:36px;height:4px;border-radius:3px;background:#E4E8F0;margin:-6px auto 12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11.5px;color:var(--mut);font-weight:600;margin-bottom:6px}
+.inp{width:100%;padding:11px 12px;border:1px solid #E4E8F0;border-radius:13px;background:#FAFBFD;
+  font-size:15px;font-variant-numeric:tabular-nums;transition:.16s}
+.inp:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.13)}
+.sbtn{width:100%;padding:13px;border-radius:14px;background:#F1F4F9;font-size:14.5px;font-weight:650;margin-top:8px;text-align:center}
+.sbtn:active{background:#E6EBF4}
+.sbtn.primary{background:linear-gradient(135deg,#1B2A4A,#2C3E68);color:#fff}
+.sbtn.danger{color:var(--red)}
+
+.padwrap{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;background:var(--bg)}
+.padwrap.on{display:flex;animation:slidesheet .26s cubic-bezier(.2,.8,.2,1)}
+@keyframes slidesheet{from{transform:translateY(100%)}to{transform:none}}
+.padhead{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 16px 6px}
+.padhead .x{width:32px;height:32px;border-radius:10px;background:#EAEEF6;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink2)}
+.padhead .ttl{font-size:15px;font-weight:700}
+.padbody{flex:1;overflow-y:auto;padding:4px 16px 8px}
+.padfoot{padding:8px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg)}
+.amt{font-size:42px;font-weight:750;letter-spacing:-1.6px;font-variant-numeric:tabular-nums;line-height:1.15;padding:6px 0 2px}
+.amt .c{font-size:22px;color:var(--mut);margin-right:5px;font-weight:600}
+.catgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.catb{background:#fff;border-radius:16px;padding:9px 3px 7px;text-align:center;box-shadow:var(--shadow);
+  border:1.8px solid transparent;transition:.14s}
+.catb .n{font-size:11.5px;font-weight:650;line-height:1.15}
+.catb .r{font-size:9px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums;line-height:1.1;height:11px;overflow:hidden}
+.catb.on{border-color:var(--blue);background:#F2F7FF;box-shadow:0 4px 14px rgba(59,130,246,.18)}
+.catb.on .n{color:#1D4ED8}
+.catb .r.neg{color:var(--red);font-weight:700}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:0 0 auto;padding:7px 13px;border-radius:20px;background:#fff;font-size:12.5px;color:#475467;
+  box-shadow:var(--shadow);border:1.4px solid transparent}
+.chips button.on{background:var(--navy);color:#fff;box-shadow:0 4px 12px rgba(15,23,42,.24)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr) 82px;gap:8px;margin-top:10px}
+.keypad button{height:50px;border-radius:14px;background:#fff;font-size:21px;font-weight:650;
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.keypad button:active{background:#EDF1F8;transform:scale(.97)}
+.keypad button.del{background:#FEF1F0;color:var(--red);font-size:17px;box-shadow:none}
+.keypad button.ok{grid-row:span 4;height:auto;background:linear-gradient(140deg,#2C3E68,#1B2A4A);
+  color:#fff;font-size:15px;font-weight:700;box-shadow:0 6px 18px rgba(23,37,64,.28)}
+.keypad button.ok:disabled{opacity:.32;box-shadow:none;background:#CBD3E1}
+
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(12px);
+  background:rgba(16,24,40,.94);color:#fff;padding:11px 19px;border-radius:24px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.24s;z-index:120;max-width:88%;text-align:center;
+  box-shadow:0 8px 24px rgba(16,24,40,.24)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.tag{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:5px;background:#F2F4F8;color:#667085;font-weight:700;margin-left:5px;vertical-align:1.5px}
+.tag.b{background:#EAF2FF;color:#1D4ED8}
+.tag.g{background:#E7F8F0;color:#0B8A52}
+.tag.r{background:#FEF1F0;color:#D92D20}
+details{margin-top:4px}
+summary{list-style:none;font-size:12.5px;color:var(--mut);padding:9px 0;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary:after{content:" ▾";font-size:10px}
+details[open] summary:after{content:" ▴"}
+.prow{display:grid;grid-template-columns:1fr 62px;gap:8px;align-items:center;padding:6px 0;font-size:13px}
+.prow input{padding:6px 8px;font-size:14px;text-align:right;border:1px solid #E4E8F0;border-radius:9px;background:#FAFBFD;width:100%}
+.pre{display:flex;gap:8px;margin:8px 0 12px}
+.pre button{flex:1;padding:9px 4px;border-radius:12px;background:#F1F4F9;font-size:11.5px;font-weight:650;line-height:1.3}
+.pre button.on{background:var(--navy);color:#fff}
+
+/* ---------- 记一笔（沿用 v5 布局） ---------- */
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dchip{font-size:12px;color:var(--mut);padding:4px 10px;border-radius:14px;background:#F1F3F6}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cat{padding:11px 4px 9px;border-radius:13px;background:#F7F8FA;text-align:center;border:1.5px solid transparent;transition:.12s}
+.cat:active{transform:scale(.97)}
+.cat .n{font-size:14px;font-weight:600}
+.cat .r{font-size:10.5px;color:var(--mut);margin-top:3px;font-variant-numeric:tabular-nums;min-height:14px}
+.cat.on{background:#E9F0FF;border-color:var(--blue)}
+.cat.on .n{color:#1D4ED8}
+.cat .r.neg{color:var(--red);font-weight:600}
+.tg{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.tg::-webkit-scrollbar{display:none}
+.tg button{flex:0 0 auto;padding:7px 14px;border-radius:20px;background:#F7F8FA;font-size:13px;color:#4B5563}
+.tg button.on{background:var(--navy);color:#fff}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.kp button{height:50px;border-radius:13px;background:#F4F5F7;font-size:20px;font-weight:600}
+.kp button:active{background:#E6E8EC}
+.padsave{height:52px;border-radius:13px;width:100%;margin-top:12px;color:#fff;font-size:16px;font-weight:650;
+  background:linear-gradient(135deg,#1F3864,#2F5AA8);box-shadow:0 8px 20px -10px rgba(31,56,100,.7)}
+.padsave:active{transform:scale(.99);opacity:.94}
+.padsave.dis{opacity:.35;box-shadow:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mo"><button id="pm">‹</button><span class="t" id="ym">—</span><button id="nm">›</button></div>
+  <div class="topact"><div class="chipnet">净资产 <b id="nwv">—</b></div></div>
+</div>
+
+<main>
+  <section class="screen on" id="s-home">
+    <div class="hero">
+      <div class="lbl">本月结余</div>
+      <div class="big mono"><small>¥</small><span id="hBal">0.00</span></div>
+      <div class="row2">
+        <div class="pill"><small>收入</small><b class="mono" id="hIn">0</b></div>
+        <div class="pill"><small>支出</small><b class="mono" id="hOut">0</b></div>
+        <div class="pill"><small>预算剩余</small><b class="mono" id="hLeft">0</b></div>
+      </div>
+      <div class="foot"><span id="hNet">净资产 ¥0</span><span id="hDelta">较上月 —</span></div>
+    </div>
+
+    <div class="quick">
+      <button data-go="budget"><span class="ic">🎯</span><span class="t">预算已用</span><span class="v" id="qBudget">0%</span></button>
+      <button data-go="assets"><span class="ic">🏦</span><span class="t">净资产</span><span class="v" id="qNet">0</span></button>
+      <button data-go="assets" data-pane="invest"><span class="ic">📈</span><span class="t">投资完成</span><span class="v" id="qInv">0%</span></button>
+    </div>
+
+    <div class="card">
+      <div class="h"><b>净资产走势</b><span class="sub" id="trendSub">近 12 个月</span></div>
+      <div id="nwChart"></div>
+      <div class="donutwrap" style="margin-top:10px;justify-content:space-between">
+        <div class="mini">最高 <b class="mono" id="nwMax">—</b></div>
+        <div class="mini">最低 <b class="mono" id="nwMin">—</b></div>
+        <div class="mini">变化 <b class="mono" id="nwChg">—</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="h"><b>本月流水</b><span class="sub" id="listCount"></span></div>
+      <div id="homeFlow"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="s-budget">
+    <div class="card">
+      <div class="h"><b>本月可用</b><span class="sub" id="baseLbl">—</span></div>
+      <div class="ringwrap">
+        <div class="ring" id="budRing"></div>
+        <div class="ringside">
+          <div class="it"><span class="mini">预算总额</span><b class="mono" id="bTot">—</b></div>
+          <div class="it"><span class="mini">已用</span><b class="mono" id="bUsed">—</b></div>
+          <div class="it"><span class="mini">剩余</span><b class="mono" id="bLeft">—</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="budGroups"></div>
+    <div class="card">
+      <details>
+        <summary id="pctSumTxt">预算比例设置</summary>
+        <div class="pre" id="presets"></div>
+        <div id="pctGrid"></div>
+        <div class="h" style="margin:10px 0 0"><span class="mini">合计</span><span class="mono" id="pctSum">—</span></div>
+      </details>
+    </div>
+  </section>
+
+  <section class="screen" id="s-assets">
+    <div class="seg" id="assetSeg" style="margin-bottom:12px">
+      <button data-v="asset" class="on">资产</button>
+      <button data-v="invest">投资</button>
+    </div>
+
+    <div id="paneAsset">
+      <div class="card" id="grpInv"></div>
+      <div class="card" id="grpCash"></div>
+      <div class="card" id="grpOther"></div>
+      <div class="card" id="grpLiab"></div>
+      <div class="card">
+        <div class="h"><b>净资产</b><span class="sub">总资产 − 总负债</span></div>
+        <div class="amt mono" id="netBig" style="font-size:30px">—</div>
+        <div class="donutwrap" style="margin-top:8px">
+          <div id="donut"></div>
+          <div class="legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="paneInvest" style="display:none">
+      <div class="card">
+        <div class="h"><b>投资进度</b><span class="sub" id="invYear">—</span></div>
+        <div class="h" style="margin:0"><span class="mini" id="invHint">—</span><span class="mini mono" id="invRatio">—</span></div>
+        <div class="bar" style="margin-top:7px"><i id="invBar" style="width:0;background:var(--blue)"></i></div>
+        <div class="grid6" id="tgGrid"></div>
+      </div>
+      <div class="card">
+        <div class="h"><b>今年</b><span class="sub" id="invYear2">—</span></div>
+        <div class="kpis">
+          <div class="kpi"><span>已投入</span><b id="invPut">0</b></div>
+          <div class="kpi"><span>年度目标</span><b id="invGoal">未设</b></div>
+        </div>
+        <div class="h" style="margin:12px 0 0"><span class="mini">完成度</span><span class="mini mono" id="invRatio2">—</span></div>
+        <div class="bar" style="margin-top:6px"><i id="invBar2" style="width:0;background:var(--blue)"></i></div>
+      </div>
+      <div class="card">
+        <div class="h"><b>12 个月投入</b><span class="sub" id="yearTotal">—</span></div>
+        <div id="mCols"></div>
+      </div>
+      <div class="card">
+        <div class="h"><b>本月投入</b><span class="sub" id="mInvTot">—</span></div>
+        <div id="mBars"></div>
+      </div>
+      <div class="card">
+        <div class="h"><b>各标的</b><span class="sub">点一行改目标 / 市值</span></div>
+        <div id="tList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="s-more">
+    <div class="card">
+      <div class="h"><b>本月明细</b><span class="sub" id="sumLine">—</span></div>
+      <div class="seg" id="filterSeg">
+        <button data-f="all" class="on">全部</button>
+        <button data-f="out">支出</button>
+        <button data-f="in">收入</button>
+      </div>
+      <div id="detailList"></div>
+    </div>
+    <div class="card">
+      <div class="h"><b>备份</b></div>
+      <button class="sbtn" id="btnExport">导出备份（JSON）</button>
+      <button class="sbtn" id="btnCsv">导出明细（CSV）</button>
+      <button class="sbtn" id="btnImport">导入备份</button>
+      <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+      <button class="sbtn danger" id="btnWipe">清空全部数据</button>
+      <div class="mini" style="margin-top:10px">数据只存在这台手机。换手机或清缓存前，一定先导出。</div>
+    </div>
+  </section>
+</main>
+
+<nav id="nav">
+  <button class="nb on" data-s="home"><span class="ic">🏠</span>首页</button>
+  <button class="nb" data-s="budget"><span class="ic">🎯</span>预算</button>
+  <button class="fab" id="fab">＋</button>
+  <button class="nb" data-s="assets"><span class="ic">🏦</span>资产</button>
+  <button class="nb" data-s="more"><span class="ic">☰</span>明细</button>
+</nav>
+
+<div class="padwrap" id="pad">
+  <div class="padhead">
+    <button class="x" id="padClose">✕</button>
+    <div class="ttl">记一笔</div>
+    <span style="width:32px"></span>
+  </div>
+  <div class="padbody">
+    <div class="card" style="margin:0">
+      <div class="row"><span class="h" style="margin:0">金额</span><button class="dchip" id="dchip">今天</button></div>
+      <div class="amt mono" id="amtView" style="font-size:36px"><span class="c">¥</span>0</div>
+      <div class="seg" id="typeSeg"><button data-t="exp" class="on">支出</button><button data-t="inc">收入</button></div>
+      <div class="cats" id="catGrid"></div>
+      <div id="tgWrap" style="display:none"><div class="tg" id="tgList"></div></div>
+      <div class="kp" id="kp"></div>
+      <button class="padsave dis" id="btnSave">记一笔</button>
+      <input type="date" id="dateIn" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/*__CORE_START__*/
+var GROUPS=[{k:'need',n:'必要',items:['吃饭','交通','日用']},{k:'want',n:'想要',items:['娱乐','购物','社交']},{k:'future',n:'未来',items:['投资','储蓄']}];
+var BUD=['吃饭','交通','日用','娱乐','购物','社交','投资','储蓄'];
+var SPEND=['吃饭','交通','日用','娱乐','购物','社交'];
+var INC=['工资','其他收入'];
+var C_INVEST='投资', C_SAVE='储蓄', C_DEBT='还款';
+var TARGETS=['沪深300','股票','QDII','食品饮料','黄金','债券'];
+var T2A={'沪深300':'fund','QDII':'fund','食品饮料':'fund','股票':'stock','债券':'bond','黄金':'gold'};
+var ACCT_GROUPS=[{k:'inv',n:'投资账户'},{k:'cash',n:'现金账户'},{k:'other',n:'其他账户'}];
+var LIABS=[{id:'l_douyin',n:'抖音月付'},{id:'l_baitiao',n:'京东白条'}];
+var PRESETS={
+  steady:{n:'稳健 50/30/20',map:{'吃饭':0.24,'交通':0.10,'日用':0.16,'娱乐':0.12,'购物':0.10,'社交':0.08,'投资':0.12,'储蓄':0.08}},
+  balance:{n:'均衡 45/15/40',map:{'吃饭':0.24,'交通':0.10,'日用':0.11,'娱乐':0.07,'购物':0.05,'社交':0.03,'投资':0.25,'储蓄':0.15}},
+  turbo:{n:'进取 40/10/50',map:{'吃饭':0.22,'交通':0.08,'日用':0.10,'娱乐':0.05,'购物':0.03,'社交':0.02,'投资':0.32,'储蓄':0.18}}
+};
+function pad2(n){return n<10?'0'+n:''+n;}
+function mk(y,m){return y+'-'+pad2(m);}
+function inM(e,k){return e.d.slice(0,7)===k;}
+function sumC(list,c){var t=0;for(var i=0;i<list.length;i++){if(list[i].c===c)t+=list[i].a;}return t;}
+function defaultAcc(){
+  return [
+    {id:'a_fund', n:'基金',  g:'inv',  auto:'fund', ic:'📈'},
+    {id:'a_stock',n:'股票',  g:'inv',  auto:'stock',ic:'📊'},
+    {id:'a_bond', n:'债券',  g:'inv',  auto:'bond', ic:'🧾'},
+    {id:'a_gold', n:'黄金',  g:'inv',  auto:'gold', ic:'🪙'},
+    {id:'a_cash', n:'流动资产',g:'cash',auto:'cash', ic:'💳'},
+    {id:'a_save', n:'储蓄',  g:'cash', auto:'save', ic:'🏦'}
+  ];
+}
+function calcMonth(state,k){
+  var list=state.e.filter(function(e){return inM(e,k);});
+  var income=0;
+  for(var i=0;i<list.length;i++){if(INC.indexOf(list[i].c)>=0)income+=list[i].a;}
+  var debt=sumC(list,C_DEBT);
+  var base=income-debt;if(base<0)base=0;
+  var used={},budget={};
+  BUD.forEach(function(c){used[c]=sumC(list,c);budget[c]=base*(state.s.pct[c]||0);});
+  var g={};
+  GROUPS.forEach(function(gr){
+    var b=0,u=0;
+    gr.items.forEach(function(c){b+=budget[c];u+=used[c];});
+    g[gr.k]={budget:b,used:u,left:b-u};
+  });
+  return {list:list,income:income,debt:debt,base:base,used:used,budget:budget,groups:g};
+}
+function flowsOf(state,k){
+  var list=state.e.filter(function(e){return inM(e,k);});
+  var income=0,spend=0,save=0,repaySum=0,investSum=0,invest={},repay={};
+  TARGETS.forEach(function(t){invest[t]=0;});
+  LIABS.forEach(function(p){repay[p.id]=0;});
+  list.forEach(function(e){
+    if(INC.indexOf(e.c)>=0){income+=e.a;}
+    else if(SPEND.indexOf(e.c)>=0){spend+=e.a;}
+    else if(e.c===C_SAVE){save+=e.a;}
+    else if(e.c===C_DEBT){repaySum+=e.a;if(e.tg&&repay[e.tg]!==undefined)repay[e.tg]+=e.a;}
+    else if(e.c===C_INVEST){investSum+=e.a;if(e.tg&&invest[e.tg]!==undefined)invest[e.tg]+=e.a;}
+  });
+  return {income:income,spend:spend,save:save,repaySum:repaySum,investSum:investSum,invest:invest,repay:repay};
+}
+function monthsBetween(state,upto){
+  var set={};
+  state.e.forEach(function(x){set[x.d.slice(0,7)]=1;});
+  Object.keys(state.bal).forEach(function(m){set[m]=1;});
+  var ms=Object.keys(set).filter(function(m){return m<=upto;}).sort();
+  if(ms[ms.length-1]!==upto)ms.push(upto);
+  return ms;
+}
+function seriesUpTo(state,upto){
+  var months=monthsBetween(state,upto);
+  var cash=0,save=0,mv={},liab={},manual={};
+  TARGETS.forEach(function(t){mv[t]=0;});
+  LIABS.forEach(function(p){liab[p.id]=0;});
+  for(var i=0;i<months.length;i++){
+    var m=months[i],f=flowsOf(state,m),b=state.bal[m]||{};
+    var adj=b.adj||{},mvAdj=b.mvAdj||{};
+    cash=cash+f.income-f.spend-f.investSum-f.save-f.repaySum+(Number(adj['a_cash'])||0);
+    save=save+f.save+(Number(adj['a_save'])||0);
+    TARGETS.forEach(function(t){mv[t]=mv[t]+f.invest[t]+(Number(mvAdj[t])||0);});
+    LIABS.forEach(function(p){liab[p.id]=liab[p.id]-f.repay[p.id]+(Number(adj[p.id])||0);});
+    (state.acc||[]).forEach(function(a){
+      if(!a.auto){manual[a.id]=(manual[a.id]||0)+(Number(adj[a.id])||0);}
+    });
+  }
+  return {cash:cash,save:save,mv:mv,liab:liab,manual:manual};
+}
+function accValue(state,k,acc){
+  var s=seriesUpTo(state,k);
+  if(acc.auto==='cash')return s.cash;
+  if(acc.auto==='save')return s.save;
+  if(acc.auto){
+    var tot=0;
+    TARGETS.forEach(function(t){if(T2A[t]===acc.auto)tot+=s.mv[t]||0;});
+    return tot;
+  }
+  return s.manual[acc.id]||0;
+}
+function netWorth(state,k){
+  var a=0,l=0;
+  (state.acc||[]).forEach(function(x){a+=accValue(state,k,x);});
+  LIABS.forEach(function(p){l+=Number(seriesUpTo(state,k).liab[p.id])||0;});
+  return {assets:a,liabs:l,net:a-l};
+}
+function investedYear(state,year,t){
+  var y=String(year),s=0;
+  state.e.forEach(function(e){if(e.c===C_INVEST&&e.tg===t&&e.d.slice(0,4)===y)s+=e.a;});
+  return s;
+}
+function newState(){
+  var d=new Date();
+  return {v:4,s:{y:d.getFullYear(),m:d.getMonth()+1,preset:'balance',pct:JSON.parse(JSON.stringify(PRESETS.balance.map)),goals:{}},e:[],bal:{},acc:defaultAcc()};
+}
+/*__CORE_END__*/
+
+var KEY='pft.v4';
+var S=loadState();
+var ui={type:'exp',cat:null,tg:null,amount:'0',date:'',filter:'all',pane:'asset'};
+
+function loadState(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&o.v===4){if(!o.acc||!o.acc.length)o.acc=defaultAcc();return o;}}}catch(e){}
+  return newState();
+}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('保存失败：空间不足');}}
+function fmt(n){n=Number(n)||0;var neg=n<0;n=Math.abs(n);var s=n.toFixed(2),p=s.split('.');p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');return (neg?'-':'')+p[0]+'.'+p[1];}
+function fmtW(n){n=Number(n)||0;var a=Math.abs(n);
+  if(a>=100000000)return (n/100000000).toFixed(2)+'亿';
+  if(a>=10000)return (n/10000).toFixed(a>=100000?0:2)+'万';
+  return fmt(n);}
+function short(n){n=Number(n)||0;if(Math.abs(n)>=10000)return (n/10000).toFixed(1)+'万';return fmt(n);}
+function curKey(){return mk(S.s.y,S.s.m);}
+function pad(n){return n<10?'0'+n:''+n;}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function $(s){return document.querySelector(s);}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('on');},1600);}
+function download(name,text,mime){var b=new Blob([text],{type:mime||'application/json;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);}
+function balOf(k){if(!S.bal[k])S.bal[k]={adj:{},mvAdj:{}};if(!S.bal[k].adj)S.bal[k].adj={};if(!S.bal[k].mvAdj)S.bal[k].mvAdj={};return S.bal[k];}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+/* ---------- 图表 ---------- */
+var COLORS=['#3B82F6','#12B76A','#F79009','#7A5AF8','#36BFFA','#F04438','#8A93A6','#EC4899'];
+var TCOLORS=['#3B82F6','#12B76A','#F79009','#7A5AF8','#36BFFA','#F04438'];
+
+function lineChartSVG(pts,color){
+  color=color||'#3B82F6';
+  var W=310,H=112,PL=6,PR=6,PT=16,PB=18;
+  var vals=pts.map(function(p){return p.v;});
+  var max=Math.max.apply(null,vals),min=Math.min.apply(null,vals);
+  if(max===min){max=max+1;min=min-1;}
+  var pd=(max-min)*0.18;max+=pd;min-=pd;
+  var n=pts.length;
+  function X(i){return PL+(W-PL-PR)*(n===1?0.5:i/(n-1));}
+  function Y(v){return PT+(H-PT-PB)*(1-(v-min)/(max-min));}
+  var line=pts.map(function(p,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1);}).join(' ');
+  var area=line+' L'+X(n-1).toFixed(1)+' '+(H-PB)+' L'+X(0).toFixed(1)+' '+(H-PB)+' Z';
+  var dots=pts.map(function(p,i){
+    return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(i===n-1?3.6:2)+'" fill="'+(i===n-1?color:'#C6D2E4')+'" stroke="#fff" stroke-width="'+(i===n-1?1.6:0)+'"></circle>';
+  }).join('');
+  var labels=pts.map(function(p,i){
+    if(i%3!==0&&i!==n-1)return '';
+    return '<text x="'+X(i).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" style="font-size:8.5px;fill:#98A2B3">'+p.label+'</text>';
+  }).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">'+
+    '<defs><linearGradient id="lgd'+color.replace('#','')+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="'+color+'" stop-opacity=".22"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
+    '<path d="'+area+'" fill="url(#lgd'+color.replace('#','')+')"></path>'+
+    '<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"></path>'+
+    dots+labels+'</svg>';
+}
+function barChartSVG(months,curM){
+  var W=310,H=104,BASE=H-18,bw=(W-8)/12;
+  var max=Math.max.apply(null,months.map(function(x){return x.v;}));
+  if(!(max>0))max=1;
+  var bars=months.map(function(x,i){
+    var h=x.v>0?Math.max(3,(BASE-10)*(x.v/max)):0;
+    var cur=(i+1===curM);
+    return '<rect x="'+(4+i*bw+bw*0.22).toFixed(1)+'" y="'+(BASE-h).toFixed(1)+'" width="'+(bw*0.56).toFixed(1)+
+      '" height="'+Math.max(h,1).toFixed(1)+'" rx="3" fill="'+(cur?'#1B2A4A':(x.v>0?'#A9C4EA':'#EDF0F6'))+'"></rect>';
+  }).join('');
+  var labels=months.map(function(x,i){
+    return '<text x="'+(4+i*bw+bw/2).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" style="font-size:8px;fill:#98A2B3">'+x.m+'</text>';
+  }).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+bars+labels+'</svg>';
+}
+function ringSVG(pct,size,sw,color){
+  size=size||58;sw=sw||5;
+  var R=(size-sw)/2-1,C=2*Math.PI*R,p=Math.max(0,Math.min(1,pct));
+  return '<svg viewBox="0 0 '+size+' '+size+'" style="width:100%;height:100%">'+
+    '<circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+R+'" fill="none" stroke="#EEF1F6" stroke-width="'+sw+'"></circle>'+
+    (p>0?'<circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="'+sw+
+      '" stroke-linecap="round" stroke-dasharray="'+(C*p).toFixed(2)+' '+(C-C*p).toFixed(2)+
+      '" transform="rotate(-90 '+(size/2)+' '+(size/2)+')"></circle>':'')+'</svg>';
+}
+function donutSVG(items){
+  var total=items.reduce(function(s,x){return s+x.v;},0)||1;
+  var R=40,C=2*Math.PI*R,off=0,segs='';
+  items.forEach(function(x,i){
+    var len=C*(x.v/total);
+    segs+='<circle cx="63" cy="63" r="'+R+'" fill="none" stroke="'+COLORS[i%COLORS.length]+'" stroke-width="16" '+
+      'stroke-dasharray="'+Math.max(len-2,0.5).toFixed(2)+' '+(C-len+2).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" '+
+      'transform="rotate(-90 63 63)" stroke-linecap="round"></circle>';
+    off+=len;
+  });
+  return '<svg viewBox="0 0 126 126" class="donut">'+segs+
+    '<text x="63" y="60" text-anchor="middle" style="font-size:10px;fill:#98A2B3">总资产</text>'+
+    '<text x="63" y="77" text-anchor="middle" style="font-size:14px;font-weight:750;fill:#101828">'+fmtW(total)+'</text></svg>';
+}
+function lastMonths(k,n){
+  var y=+k.slice(0,4),m=+k.slice(5,7),out=[];
+  for(var i=n-1;i>=0;i--){
+    var d=new Date(y,m-1-i,1);
+    out.push({k:d.getFullYear()+'-'+pad(d.getMonth()+1),label:(d.getMonth()+1)+'月'});
+  }
+  return out;
+}
+
+/* ---------- 首页 ---------- */
+function renderHome(){
+  var k=curKey(),f=flowsOf(S,k),m=calcMonth(S,k);
+  var expense=f.spend+f.repaySum;
+  var bal=f.income-expense;
+  $('#hBal').textContent=fmt(bal);
+  $('#hIn').textContent=short(f.income);
+  $('#hOut').textContent=short(expense);
+  var bt=0; BUD.forEach(function(c){bt+=m.budget[c];});
+  var bu=0; BUD.forEach(function(c){bu+=m.used[c];});
+  $('#hLeft').textContent=short(bt-bu);
+
+  var nw=netWorth(S,k),prev=netWorth(S,lastMonths(k,2)[0].k);
+  $('#hNet').textContent='净资产 ¥'+fmtW(nw.net);
+  var d=nw.net-prev.net;
+  $('#hDelta').textContent=(Math.abs(d)<0.005?'较上月 —':'较上月 '+(d>0?'+':'')+fmtW(d));
+
+  $('#qBudget').textContent=bt>0?Math.round(bu/bt*100)+'%':'—';
+  $('#qNet').textContent=fmtW(nw.net);
+  var st=invStats();
+  $('#qInv').textContent=st.goal>0?Math.round(st.put/st.goal*100)+'%':'—';
+
+  // 净资产走势
+  var months=lastMonths(k,12);
+  var pts=months.map(function(x){return {label:x.label,v:netWorth(S,x.k).net};});
+  $('#nwChart').innerHTML=lineChartSVG(pts,'#3B82F6');
+  var vals=pts.map(function(p){return p.v;});
+  $('#nwMax').textContent=fmtW(Math.max.apply(null,vals));
+  $('#nwMin').textContent=fmtW(Math.min.apply(null,vals));
+  var chg=vals[vals.length-1]-vals[0];
+  $('#nwChg').textContent=(chg>0?'+':'')+fmtW(chg);
+  $('#nwChg').style.color=chg>0?'var(--green)':(chg<0?'var(--red)':'var(--mut)');
+  $('#trendSub').textContent=months[0].k+' ~ '+months[11].k;
+
+  renderFlowList('#homeFlow',calcMonth(S,k).list.slice().sort(function(a,b){return a.d<b.d?1:(a.d>b.d?-1:0);}),6);
+  $('#listCount').textContent=calcMonth(S,k).list.length+' 笔';
+}
+function flowRows(list){
+  var h='',last='';
+  list.forEach(function(e){
+    if(e.d!==last){h+='<div class="daysep"><span>'+e.d.slice(5)+'</span></div>';last=e.d;}
+    var isInc=INC.indexOf(e.c)>=0;
+    var tag='';
+    if(e.tg){
+      if(TARGETS.indexOf(e.tg)>=0)tag='<span class="tag b">'+esc(e.tg)+'</span>';
+      else{var p=LIABS.filter(function(x){return x.id===e.tg;})[0];if(p)tag='<span class="tag r">'+esc(p.n)+'</span>';}
+    }
+    h+='<div class="li" data-e="'+e.id+'">'+
+      '<div class="cico">'+(isInc?'💰':catEmoji(e.c))+'</div>'+
+      '<div class="l"><b>'+esc(e.c)+tag+'</b><div class="s">'+e.d+(isInc?' · 收入':'')+'</div></div>'+
+      '<div class="amt'+(isInc?' inc':'')+'">'+(isInc?'+':'-')+fmt(e.a)+'</div></div>';
+  });
+  return h||'<div class="empty"><span class="big">🧾</span>还没有记录</div>';
+}
+function catEmoji(c){
+  var m={'吃饭':'🍚','交通':'🚇','日用':'🧴','娱乐':'🎬','购物':'🛍','社交':'🍻','投资':'📈','储蓄':'🏦','还款':'💳'};
+  return m[c]||'🧾';
+}
+function renderFlowList(sel,list,limit){
+  var l=limit?list.slice(0,limit):list;
+  $(sel).innerHTML=flowRows(l);
+  Array.prototype.forEach.call(document.querySelectorAll(sel+' [data-e]'),function(el){
+    el.onclick=function(){openEntry(el.getAttribute('data-e'));};
+  });
+}
+
+/* ---------- 预算 ---------- */
+function presetLabel(){
+  for(var key in PRESETS){
+    var pm=PRESETS[key].map,ok=true;
+    for(var c in pm){if(Math.abs((S.s.pct[c]||0)-pm[c])>1e-6){ok=false;break;}}
+    if(ok)return PRESETS[key].n;
+  }
+  return '自定义';
+}
+function renderBudget(){
+  var k=curKey(),m=calcMonth(S,k);
+  $('#baseLbl').textContent='预算基数 '+fmtW(m.base);
+  var tot=0,used=0;
+  BUD.forEach(function(c){tot+=m.budget[c];used+=m.used[c];});
+  var left=tot-used;
+  var pct=tot>0?Math.min(used/tot,1):0;
+  var col=pct>=1?'#F04438':(pct>=0.85?'#F79009':'#12B76A');
+  $('#budRing').innerHTML=ringSVG(pct,120,11,col)+
+    '<div class="cl"><b>'+(tot>0?Math.round(pct*100)+'%':'—')+'</b><small>已用</small></div>';
+  $('#bTot').textContent=fmtW(tot);
+  $('#bUsed').textContent=fmtW(used);
+  $('#bLeft').textContent=fmtW(left);
+  $('#bLeft').style.color=left<0?'var(--red)':'var(--ink)';
+
+  var host=$('#budGroups');host.innerHTML='<div class="h"><b>三档预算</b><span class="sub">50/30/20 框架</span></div>';
+  GROUPS.forEach(function(gr){
+    var g=m.groups[gr.k];
+    var p=g.budget>0?Math.min(g.used/g.budget,1):0;
+    var cl=p>=1?'#F04438':(p>=0.85?'#F79009':'#3B82F6');
+    var d=document.createElement('div');d.className='catrow';
+    var h='<div class="t"><b>'+gr.n+'</b><span class="v">'+fmtW(g.used)+' / '+fmtW(g.budget)+'</span></div>'+
+      '<div class="bar"><i style="width:'+(p*100).toFixed(1)+'%;background:'+cl+'"></i></div>';
+    gr.items.forEach(function(c){
+      var b=m.budget[c],u=m.used[c],pp=b>0?Math.min(u/b,1):0;
+      h+='<div class="subrow"><span>'+c+'</span><span class="'+(b-u<0?'bad':'')+'">'+fmtW(u)+' / '+fmtW(b)+'</span></div>';
+    });
+    d.innerHTML=h;host.appendChild(d);
+  });
+
+  var pg=$('#pctGrid');pg.innerHTML='';var sum=0;
+  BUD.forEach(function(c){
+    var v=(S.s.pct[c]||0)*100;sum+=v;
+    var row=document.createElement('div');row.className='prow';
+    row.innerHTML='<div>'+c+'</div><input type="number" inputmode="decimal" min="0" max="100" step="1" value="'+v.toFixed(0)+'" data-pct="'+c+'">';
+    pg.appendChild(row);
+  });
+  $('#pctSum').textContent=sum.toFixed(0)+'%';
+  $('#pctSumTxt').textContent='预算比例设置（'+presetLabel()+'）';
+  Array.prototype.forEach.call(pg.querySelectorAll('[data-pct]'),function(inp){
+    inp.onchange=function(){
+      var c=inp.getAttribute('data-pct'),v=parseFloat(inp.value);if(!(v>=0))v=0;
+      S.s.pct[c]=v/100;S.s.preset='custom';persist();renderAll();
+    };
+  });
+  renderPresets();
+}
+function renderPresets(){
+  var host=$('#presets');if(!host)return;host.innerHTML='';
+  Object.keys(PRESETS).forEach(function(key){
+    var p=PRESETS[key];var b=document.createElement('button');
+    b.textContent=p.n;b.className=(S.s.preset===key?'on':'');
+    b.onclick=function(){S.s.pct=JSON.parse(JSON.stringify(p.map));S.s.preset=key;persist();renderAll();toast('已套用 '+p.n);};
+    host.appendChild(b);
+  });
+}
+
+/* ---------- 资产 ---------- */
+function renderAssets(){
+  var k=curKey(),s=seriesUpTo(S,k);
+  var groups={inv:[],cash:[],other:[]};
+  (S.acc||[]).forEach(function(a){if(groups[a.g])groups[a.g].push(a);});
+  var cards={inv:'#grpInv',cash:'#grpCash',other:'#grpOther'};
+  ACCT_GROUPS.forEach(function(g){
+    var host=$(cards[g.k]);host.innerHTML='';
+    var sum=0;groups[g.k].forEach(function(a){sum+=accValue(S,k,a);});
+    var head=document.createElement('div');head.className='h';
+    head.innerHTML='<b>'+g.n+'</b><span class="sub mono">'+fmtW(sum)+'</span>';
+    host.appendChild(head);
+    if(!groups[g.k].length){
+      var e=document.createElement('div');e.className='mini';e.style.padding='10px 0';
+      e.textContent=g.k==='other'?'还没有，点下面添加':'—';host.appendChild(e);
+    }
+    groups[g.k].forEach(function(a){
+      var v=accValue(S,k,a);
+      var d=document.createElement('div');d.className='acct';
+      d.innerHTML='<div><div class="nm">'+esc(a.n)+'</div><div class="sub">'+(a.auto?'自动':'手动')+'</div></div>'+
+        '<div class="val'+(v<0?' neg':'')+'">'+fmt(v)+'</div>';
+      d.onclick=function(){openAccSheet(a);};
+      host.appendChild(d);
+    });
+    var add=document.createElement('div');add.className='acct new';
+    add.textContent='+ 添加'+g.n;
+    add.onclick=function(){openNewAccSheet(g.k);};
+    host.appendChild(add);
+  });
+
+  var lh=$('#grpLiab');lh.innerHTML='';
+  var lTot=0;LIABS.forEach(function(p){lTot+=Number(s.liab[p.id])||0;});
+  var lhead=document.createElement('div');lhead.className='h';
+  lhead.innerHTML='<b>负债</b><span class="sub mono">'+fmtW(lTot)+'</span>';
+  lh.appendChild(lhead);
+  LIABS.forEach(function(p){
+    var v=Number(s.liab[p.id])||0;
+    var d=document.createElement('div');d.className='acct';
+    d.innerHTML='<div><div class="nm">'+esc(p.n)+'</div><div class="sub">还款自动抵扣</div></div>'+
+      '<div class="val'+(v<0?' neg':'')+'">'+fmt(v)+'</div>';
+    d.onclick=function(){openLiabSheet(p);};
+    lh.appendChild(d);
+  });
+
+  var nw=netWorth(S,k);
+  $('#netBig').textContent=fmt(nw.net);
+  $('#netBig').style.color=nw.net<0?'var(--red)':'var(--ink)';
+
+  var items=(S.acc||[]).map(function(a){return {n:a.n,v:Math.max(0,accValue(S,k,a))};}).filter(function(x){return x.v>0;});
+  $('#donut').innerHTML=donutSVG(items);
+  var lg=$('#donutLegend');lg.innerHTML='';
+  var sum=items.reduce(function(a,x){return a+x.v;},0);
+  if(!sum){lg.innerHTML='<div class="mini">还没有资产</div>';}
+  items.forEach(function(x,i){
+    var d=document.createElement('div');
+    d.innerHTML='<span class="dot" style="background:'+COLORS[i%COLORS.length]+'"></span>'+
+      '<span class="nm">'+esc(x.n)+'</span><span class="pv">'+(x.v/sum*100).toFixed(0)+'%</span>';
+    lg.appendChild(d);
+  });
+  renderInvRings();
+}
+function invStats(){
+  var k=curKey(),y=S.s.y,s=seriesUpTo(S,k),put=0,goal=0;
+  TARGETS.forEach(function(t){
+    put+=investedYear(S,y,t);
+    goal+=Number((S.s.goals[t]||{}).goal)||0;
+  });
+  return {k:k,y:y,s:s,put:put,goal:goal};
+}
+function renderInvRings(){
+  var st=invStats();
+  $('#invYear').textContent=st.y+' 年度';
+  var pct=st.goal>0?Math.min(st.put/st.goal,1):0;
+  $('#invHint').textContent=st.goal>0?('已投 '+fmtW(st.put)+' / 目标 '+fmtW(st.goal)):'给标的设个年度目标';
+  $('#invRatio').textContent=st.goal>0?Math.round(pct*100)+'%':'—';
+  $('#invBar').style.width=(pct*100).toFixed(1)+'%';
+  var host=$('#tgGrid');host.innerHTML='';
+  TARGETS.forEach(function(t,i){
+    var goal=Number((S.s.goals[t]||{}).goal)||0;
+    var mv=Number(st.s.mv[t])||0;
+    var p=goal>0?Math.min(mv/goal,1):0;
+    var d=document.createElement('div');d.className='tgcard';
+    d.innerHTML='<div class="ringwrap2">'+ringSVG(p,58,5,TCOLORS[i%TCOLORS.length])+
+      '<div class="ringtxt'+(goal>0?'':' dim')+'">'+(goal>0?Math.round(p*100)+'%':'—')+'</div></div>'+
+      '<div class="tgname">'+esc(t)+'</div><div class="tgval">'+fmtW(mv)+'</div>';
+    d.onclick=function(){openTgSheet(t);};
+    host.appendChild(d);
+  });
+}
+
+/* ---------- 投资 ---------- */
+function renderInvest(){
+  var st=invStats();
+  $('#invYear2').textContent=st.y+' 年度';
+  $('#invPut').textContent=fmtW(st.put);
+  $('#invGoal').textContent=st.goal>0?fmtW(st.goal):'未设';
+  var pct=st.goal>0?Math.min(st.put/st.goal,1):0;
+  $('#invRatio2').textContent=st.goal>0?Math.round(pct*100)+'%':'—';
+  $('#invBar2').style.width=(pct*100).toFixed(1)+'%';
+
+  var months=[],tot=0;
+  for(var m=1;m<=12;m++){
+    var v=flowsOf(S,mk(st.y,m)).investSum||0;
+    months.push({m:m,v:v});tot+=v;
+  }
+  $('#yearTotal').textContent='全年 '+fmtW(tot);
+  $('#mCols').innerHTML=barChartSVG(months,S.s.m);
+
+  var f=flowsOf(S,st.k);
+  $('#mInvTot').textContent='合计 '+fmtW(f.investSum);
+  var mb=$('#mBars');mb.innerHTML='';
+  if(f.investSum<=0){mb.innerHTML='<div class="mini" style="padding:6px 0">本月还没记投资</div>';}
+  else{
+    var mx=0;TARGETS.forEach(function(t){mx=Math.max(mx,f.invest[t]||0);});
+    TARGETS.forEach(function(t,i){
+      var v=f.invest[t]||0;if(v<=0)return;
+      var d=document.createElement('div');
+      d.innerHTML='<div class="subrow" style="border:0;padding:7px 0"><span>'+esc(t)+'</span><span>'+fmtW(v)+'</span></div>'+
+        '<div class="bar" style="margin:-3px 0 6px"><i style="width:'+(v/mx*100).toFixed(1)+'%;background:'+TCOLORS[i%TCOLORS.length]+'"></i></div>';
+      mb.appendChild(d);
+    });
+  }
+
+  var tl=$('#tList');tl.innerHTML='';
+  TARGETS.forEach(function(t,i){
+    var goal=Number((S.s.goals[t]||{}).goal)||0;
+    var mv=Number(st.s.mv[t])||0;
+    var put=investedYear(S,st.y,t);
+    var p=goal>0?Math.min(mv/goal,1):0;
+    var d=document.createElement('div');d.className='trow';
+    d.innerHTML='<div class="top"><span class="nm">'+esc(t)+'</span><span class="vv">'+fmtW(mv)+' / '+(goal>0?fmtW(goal):'未设目标')+'</span></div>'+
+      '<div class="bar"><i style="width:'+(p*100).toFixed(1)+'%;background:'+TCOLORS[i%TCOLORS.length]+'"></i></div>'+
+      '<div class="h" style="margin:6px 0 0"><span class="mini">今年投入 '+fmtW(put)+'</span><span class="mini">'+(goal>0?Math.round(p*100)+'%':'—')+'</span></div>';
+    d.onclick=function(){openTgSheet(t);};
+    tl.appendChild(d);
+  });
+}
+
+/* ---------- 明细 ---------- */
+function renderDetail(){
+  var k=curKey(),m=calcMonth(S,k),host=$('#detailList');
+  var list=m.list.filter(function(e){
+    if(ui.filter==='in')return INC.indexOf(e.c)>=0;
+    if(ui.filter==='out')return INC.indexOf(e.c)<0;
+    return true;
+  }).sort(function(a,b){return a.d<b.d?1:(a.d>b.d?-1:0);});
+  host.innerHTML=list.length?flowRows(list):'<div class="empty"><span class="big">🧾</span>本月还没有记录</div>';
+  Array.prototype.forEach.call(host.querySelectorAll('[data-e]'),function(el){
+    el.onclick=function(){openEntry(el.getAttribute('data-e'));};
+  });
+  var inSum=0,outSum=0;
+  m.list.forEach(function(e){if(INC.indexOf(e.c)>=0)inSum+=e.a;else outSum+=e.a;});
+  $('#sumLine').textContent='支出 '+fmtW(outSum)+' · 收入 '+fmtW(inSum)+' · '+m.list.length+' 笔';
+}
+
+/* ---------- 记账面板 ---------- */
+function openPad(){
+  ui.amount='0';ui.cat=null;ui.tg=null;ui.date='';
+  renderPad();
+  $('#pad').classList.add('on');
+}
+function closePad(){$('#pad').classList.remove('on');}
+function renderPad(){
+  var k=curKey(),m=calcMonth(S,k),isInc=ui.type==='inc';
+  var cats=isInc?INC:SPEND.concat([C_INVEST,C_SAVE,C_DEBT]);
+  var g=$('#catGrid');g.innerHTML='';
+  cats.forEach(function(c){
+    var b=document.createElement('button');
+    b.className='cat'+(ui.cat===c?' on':'');
+    var rem='',neg=false;
+    if(isInc){rem='';}
+    else if(BUD.indexOf(c)>=0){
+      if(m.base<=0){rem='待录收入';}
+      else{var rest=m.budget[c]-m.used[c];rem='剩 '+short(rest);neg=rest<0;}
+    }else{rem='先扣再分';}
+    b.innerHTML='<div class="n">'+c+'</div><div class="r'+(neg?' neg':'')+'">'+rem+'</div>';
+    b.onclick=function(){ui.cat=c;ui.tg=null;renderPad();};
+    g.appendChild(b);
+  });
+  var showTg=(ui.cat==='投资'||ui.cat==='还款');
+  $('#tgWrap').style.display=showTg?'block':'none';
+  if(showTg){
+    var tl=$('#tgList');tl.innerHTML='';
+    var opts=(ui.cat==='投资')?TARGETS.map(function(t){return {n:t,id:t};}):LIABS;
+    opts.forEach(function(o){
+      var b=document.createElement('button');
+      b.textContent=o.n;b.className=(ui.tg===o.id?'on':'');
+      b.onclick=function(){ui.tg=(ui.tg===o.id?null:o.id);renderPad();};
+      tl.appendChild(b);
+    });
+  }
+  $('#amtView').innerHTML='<span class="c">¥</span>'+ui.amount;
+  var d=ui.date||todayISO(),isToday=(d===todayISO());
+  $('#dchip').textContent=isToday?'今天':d.slice(5);
+  $('#dchip').style.color=isToday?'':'var(--red)';
+  buildKeypad();
+  updateOk();
+}
+function buildKeypad(){
+  var kp=$('#kp');if(kp.dataset.b)return;
+  ['1','2','3','4','5','6','7','8','9','.','0','⌫'].forEach(function(k){
+    var b=document.createElement('button');b.textContent=k;
+    b.onclick=function(){pressKey(k);};kp.appendChild(b);
+  });
+  kp.dataset.b='1';
+}
+function updateOk(){
+  var bt=$('#btnSave');if(!bt)return;
+  var good=parseFloat(ui.amount)>0&&ui.cat;
+  bt.className='padsave'+(good?'':' dis');
+  bt.textContent=ui.type==='inc'?'记收入':'记一笔';
+}
+function pressKey(k){
+  var a=ui.amount;
+  if(k==='⌫'){a=a.length>1?a.slice(0,-1):'0';if(a==='')a='0';}
+  else if(k==='.'){if(a.indexOf('.')<0)a=a+'.';}
+  else{
+    if(a==='0')a=k;
+    else{var dec=a.indexOf('.');if(dec>=0&&a.length-dec>2)return;if(a.replace('.','').length>=9)return;a=a+k;}
+  }
+  ui.amount=a;renderPad();
+}
+function saveEntry(){
+  var a=parseFloat(ui.amount);
+  if(!(a>0)){toast('先输入金额');return;}
+  if(!ui.cat){toast('选一个大类');return;}
+  if(ui.cat===C_INVEST&&!ui.tg){toast('选一个标的');return;}
+  if(ui.cat===C_DEBT&&!ui.tg){toast('选还哪个');return;}
+  var d=ui.date||todayISO();
+  var e={id:uid(),d:d,c:ui.cat,a:Math.round(a*100)/100};
+  if(ui.tg)e.tg=ui.tg;
+  S.e.push(e);
+  var mm=d.slice(0,7).split('-');S.s.y=+mm[0];S.s.m=+mm[1];
+  persist();closePad();renderAll();
+  toast('已记 '+ui.cat+' ¥'+fmt(a));
+}
+
+/* ---------- 弹层 ---------- */
+function sheet(html){$('#sheet').innerHTML='<div class="grab"></div>'+html;$('#modal').classList.add('on');}
+function closeSheet(){$('#modal').classList.remove('on');}
+$('#modal').onclick=function(e){if(e.target===this)closeSheet();};
+
+function openTgSheet(t){
+  var s=seriesUpTo(S,curKey());
+  var goal=Number((S.s.goals[t]||{}).goal)||0;
+  var mv=Number(s.mv[t])||0;
+  var put=investedYear(S,S.s.y,t);
+  sheet('<h3>'+esc(t)+'</h3>'+
+    '<div class="field"><label>年度目标</label><input class="inp" id="shGoal" type="number" inputmode="decimal" value="'+(goal||'')+'" placeholder="0"></div>'+
+    '<div class="field"><label>当前市值</label><input class="inp" id="shMv" type="number" inputmode="decimal" value="'+mv.toFixed(2)+'"></div>'+
+    '<div class="mini" style="margin-bottom:10px">今年累计投入 '+fmtW(put)+'，市值默认等于累计投入。</div>'+
+    '<button class="sbtn primary" id="shOk">保存</button><button class="sbtn" id="shCancel">取消</button>');
+  $('#shCancel').onclick=closeSheet;
+  $('#shOk').onclick=function(){
+    if(!S.s.goals[t])S.s.goals[t]={};
+    S.s.goals[t].goal=parseFloat($('#shGoal').value)||0;
+    var cur=Number(seriesUpTo(S,curKey()).mv[t])||0,val=parseFloat($('#shMv').value);
+    if(!isNaN(val)){var b=balOf(curKey());b.mvAdj[t]=(Number(b.mvAdj[t])||0)+(val-cur);}
+    persist();closeSheet();renderAll();toast('已保存');
+  };
+}
+function openAccSheet(acc){
+  var v=accValue(S,curKey(),acc);
+  sheet('<h3>编辑账户</h3>'+
+    '<div class="field"><label>名称</label><input class="inp" id="acName" type="text" value="'+esc(acc.n)+'"></div>'+
+    (acc.auto?'<div class="mini" style="margin-bottom:10px">自动账户：金额随记账变化。</div>'
+      :'<div class="field"><label>当前余额</label><input class="inp" id="acVal" type="number" inputmode="decimal" value="'+v.toFixed(2)+'"></div>')+
+    '<button class="sbtn primary" id="acOk">保存</button>'+
+    (acc.auto?'':'<button class="sbtn danger" id="acDel">删除账户</button>')+
+    '<button class="sbtn" id="acCancel">取消</button>');
+  $('#acCancel').onclick=closeSheet;
+  $('#acOk').onclick=function(){
+    var n=$('#acName').value.trim();if(n)acc.n=n;
+    if(!acc.auto){
+      var val=parseFloat($('#acVal').value);
+      if(!isNaN(val)){
+        var cur=accValue(S,curKey(),acc),b=balOf(curKey());
+        b.adj[acc.id]=(Number(b.adj[acc.id])||0)+(val-cur);
+      }
+    }
+    persist();closeSheet();renderAll();toast('已保存');
+  };
+  if(!acc.auto){
+    $('#acDel').onclick=function(){
+      if(!confirm('删除账户「'+acc.n+'」？'))return;
+      S.acc=S.acc.filter(function(a){return a.id!==acc.id;});
+      persist();closeSheet();renderAll();toast('已删除');
+    };
+  }
+}
+function openNewAccSheet(g){
+  var gname={inv:'投资账户',cash:'现金账户',other:'其他账户'}[g];
+  sheet('<h3>添加'+gname+'</h3>'+
+    '<div class="field"><label>名称</label><input class="inp" id="acName" type="text" placeholder="比如：公积金"></div>'+
+    '<div class="field"><label>当前余额</label><input class="inp" id="acVal" type="number" inputmode="decimal" placeholder="0.00"></div>'+
+    '<button class="sbtn primary" id="acOk">添加</button><button class="sbtn" id="acCancel">取消</button>');
+  $('#acCancel').onclick=closeSheet;
+  $('#acOk').onclick=function(){
+    var n=$('#acName').value.trim();if(!n){toast('先起个名字');return;}
+    var id='u_'+uid(),v=parseFloat($('#acVal').value)||0;
+    S.acc.push({id:id,n:n,g:g,auto:null});
+    if(v!==0){balOf(curKey()).adj[id]=v;}
+    persist();closeSheet();renderAll();toast('已添加');
+  };
+}
+function openLiabSheet(p){
+  var v=Number(seriesUpTo(S,curKey()).liab[p.id])||0;
+  sheet('<h3>调整 '+esc(p.n)+'</h3>'+
+    '<div class="field"><label>当前欠款</label><input class="inp" id="acVal" type="number" inputmode="decimal" value="'+v.toFixed(2)+'"></div>'+
+    '<div class="mini" style="margin-bottom:10px">直接改成真实欠款金额，之后每次还款会自动往下减。</div>'+
+    '<button class="sbtn primary" id="acOk">保存</button><button class="sbtn" id="acCancel">取消</button>');
+  $('#acCancel').onclick=closeSheet;
+  $('#acOk').onclick=function(){
+    var val=parseFloat($('#acVal').value);if(isNaN(val))val=0;
+    var cur=Number(seriesUpTo(S,curKey()).liab[p.id])||0,b=balOf(curKey());
+    b.adj[p.id]=(Number(b.adj[p.id])||0)+(val-cur);
+    persist();closeSheet();renderAll();toast('已更新');
+  };
+}
+function openEntry(id){
+  var e=null;
+  for(var i=0;i<S.e.length;i++)if(S.e[i].id===id)e=S.e[i];
+  if(!e)return;
+  var tag='';
+  if(e.tg){
+    if(TARGETS.indexOf(e.tg)>=0)tag=e.tg;
+    else{var p=LIABS.filter(function(x){return x.id===e.tg;})[0];tag=p?p.n:'';}
+  }
+  sheet('<h3>'+esc(e.c)+(tag?' · '+esc(tag):'')+'</h3>'+
+    '<div class="mini" style="margin-bottom:6px">'+e.d+'</div>'+
+    '<div class="amt" style="font-size:32px;padding:0 0 12px">'+fmt(e.a)+'</div>'+
+    '<button class="sbtn danger" id="delE">删除这笔</button><button class="sbtn" id="cx">关闭</button>');
+  $('#cx').onclick=closeSheet;
+  $('#delE').onclick=function(){
+    S.e=S.e.filter(function(x){return x.id!==id;});
+    persist();closeSheet();renderAll();toast('已删除');
+  };
+}
+
+/* ---------- 全局 ---------- */
+function renderHeader(){
+  $('#ym').textContent=S.s.y+'年'+S.s.m+'月';
+  $('#nwv').textContent=fmtW(netWorth(S,curKey()).net);
+}
+function renderAll(){
+  renderHeader();renderHome();renderBudget();renderAssets();renderInvest();renderDetail();
+}
+document.querySelectorAll('nav .nb').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('nav .nb').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+    $('#s-'+b.getAttribute('data-s')).classList.add('on');
+    window.scrollTo(0,0);
+  };
+});
+function setPane(v){
+  ui.pane=v;
+  Array.prototype.forEach.call(document.querySelectorAll('#assetSeg button'),function(x){
+    x.classList.toggle('on',x.getAttribute('data-v')===v);
+  });
+  document.getElementById('paneAsset').style.display=(v==='asset'?'block':'none');
+  document.getElementById('paneInvest').style.display=(v==='invest'?'block':'none');
+}
+Array.prototype.forEach.call(document.querySelectorAll('#assetSeg button'),function(b){
+  b.onclick=function(){setPane(b.getAttribute('data-v'));window.scrollTo(0,0);};
+});
+Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
+  b.onclick=function(){
+    var target=b.getAttribute('data-go');
+    Array.prototype.forEach.call(document.querySelectorAll('nav .nb'),function(x){
+      x.classList.toggle('on',x.getAttribute('data-s')===target);
+    });
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+    $('#s-'+target).classList.add('on');
+    var pn=b.getAttribute('data-pane');
+    if(pn)setPane(pn);
+    window.scrollTo(0,0);
+  };
+});
+document.querySelectorAll('#typeSeg button').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('#typeSeg button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');ui.type=b.getAttribute('data-t');ui.cat=null;ui.tg=null;renderPad();
+  };
+});
+document.querySelectorAll('#filterSeg button').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('#filterSeg button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');ui.filter=b.getAttribute('data-f');renderDetail();
+  };
+});
+$('#fab').onclick=openPad;
+$('#btnSave').onclick=saveEntry;
+$('#padClose').onclick=closePad;
+$('#dchip').onclick=function(){var di=$('#dateIn');di.value=ui.date||todayISO();if(di.showPicker){try{di.showPicker();}catch(e){di.click();}}else{di.click();}};
+$('#dateIn').onchange=function(){ui.date=this.value;renderPad();};
+$('#pm').onclick=function(){S.s.m--;if(S.s.m<1){S.s.m=12;S.s.y--;}persist();renderAll();};
+$('#nm').onclick=function(){S.s.m++;if(S.s.m>12){S.s.m=1;S.s.y++;}persist();renderAll();};
+$('#btnExport').onclick=function(){download('finance-'+curKey()+'.json',JSON.stringify(S,null,2));toast('已导出');};
+$('#btnCsv').onclick=function(){
+  var rows=['日期,类别,标的,金额'];
+  S.e.slice().sort(function(a,b){return a.d<b.d?-1:1;}).forEach(function(e){rows.push([e.d,e.c,e.tg||'',e.a].join(','));});
+  download('finance-'+curKey()+'.csv','\ufeff'+rows.join('\n'),'text/csv;charset=utf-8');toast('已导出 CSV');
+};
+$('#btnImport').onclick=function(){$('#fileIn').click();};
+$('#fileIn').onchange=function(){
+  var f=this.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var o=JSON.parse(rd.result);
+      if(!o||!o.e)throw 0;
+      if(!confirm('导入会覆盖当前全部数据，确定？'))return;
+      S=o;if(!S.acc||!S.acc.length)S.acc=defaultAcc();persist();renderAll();toast('导入成功');
+    }catch(e){toast('文件格式不对');}
+  };
+  rd.readAsText(f);this.value='';
+};
+$('#btnWipe').onclick=function(){
+  if(!confirm('清空全部数据？不可恢复。'))return;
+  S=newState();persist();renderAll();toast('已清空');
+};
+renderAll();
+if('serviceWorker' in navigator && (location.protocol==='http:'||location.protocol==='https:')){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
