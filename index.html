@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" href="icon-192.png">
 <meta name="theme-color" content="#F4F6FB">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <title>我的账本</title>
 <style>
 :root{
@@ -17,7 +17,6 @@
   --navy:#0F172A;--navy2:#26355C;--blue:#3B82F6;--green:#12B76A;--red:#F04438;
   --amber:#F79009;--violet:#7A5AF8;
   --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
-  --shadow-lg:0 8px 32px rgba(16,24,40,.10);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%}
@@ -25,25 +24,42 @@ body{margin:0;background:var(--bg);color:var(--ink);padding-bottom:calc(104px + 
   font:15px/1.45 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   overscroll-behavior-y:contain;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
-input{font:inherit;color:inherit}
+input,select{font:inherit;color:inherit}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-inner-spin-button{display:none}
+
+@keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.995)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes up{from{transform:translateY(26px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes slideIn{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: no-preference){
+  .screen.on{animation:screenIn .26s cubic-bezier(.2,.8,.2,1)}
+  .screen.on .card{animation:cardIn .38s cubic-bezier(.2,.8,.2,1) both}
+  .screen.on .card:nth-child(1){animation-delay:.01s}
+  .screen.on .card:nth-child(2){animation-delay:.05s}
+  .screen.on .card:nth-child(3){animation-delay:.09s}
+  .screen.on .card:nth-child(4){animation-delay:.13s}
+  .screen.on .card:nth-child(5){animation-delay:.17s}
+  .screen.on .card:nth-child(n+6){animation-delay:.2s}
+}
+circle{transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1),stroke .3s}
+svg{overflow:visible}
 
 .topbar{position:sticky;top:0;z-index:30;padding:calc(env(safe-area-inset-top) + 8px) 16px 8px;
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   background:linear-gradient(180deg,var(--bg) 70%,rgba(244,246,251,0));backdrop-filter:blur(8px)}
 .mo{display:flex;align-items:center;gap:2px}
-.mo button{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--ink2);font-size:15px}
-.mo button:active{background:#E9EDF5}
+.mo button{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--ink2);font-size:15px;transition:.15s}
+.mo button:active{background:#E9EDF5;transform:scale(.9)}
 .mo .t{font-size:16px;font-weight:700;letter-spacing:-.2px;padding:0 4px;min-width:92px;text-align:center}
-.topact{display:flex;gap:6px;align-items:center}
 .chipnet{background:#fff;border-radius:11px;padding:6px 11px;box-shadow:var(--shadow);font-size:12px;color:var(--ink2);font-weight:600}
 .chipnet b{font-variant-numeric:tabular-nums;color:var(--ink)}
 
 main{padding:2px 14px 12px}
 .screen{display:none}
-.screen.on{display:block;animation:fade .22s cubic-bezier(.2,.8,.2,1)}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.screen.on{display:block}
 .card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .h b{font-size:15px;font-weight:700;letter-spacing:-.2px}
@@ -60,25 +76,26 @@ main{padding:2px 14px 12px}
 .hero .big{font-size:34px;font-weight:750;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;line-height:1.15}
 .hero .big small{font-size:17px;font-weight:600;opacity:.85;margin-right:3px}
 .hero .row2{display:flex;gap:8px;margin-top:14px;position:relative;z-index:1}
-.pill{flex:1;background:rgba(255,255,255,.12);border-radius:13px;padding:8px 10px}
+.pill{flex:1;background:rgba(255,255,255,.12);border-radius:13px;padding:8px 10px;transition:.2s}
+.pill:active{background:rgba(255,255,255,.2)}
 .pill small{display:block;font-size:10.5px;opacity:.72;margin-bottom:1px}
 .pill b{font-size:14.5px;font-weight:650;font-variant-numeric:tabular-nums}
 .hero .foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:11.5px;opacity:.8;position:relative;z-index:1}
 
 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.quick button{background:#fff;border-radius:16px;padding:11px 8px;box-shadow:var(--shadow);text-align:center}
-.quick button:active{transform:scale(.97)}
+.quick button{background:#fff;border-radius:16px;padding:11px 8px;box-shadow:var(--shadow);text-align:center;transition:.16s}
+.quick button:active{transform:scale(.96);box-shadow:0 1px 2px rgba(16,24,40,.06)}
 .quick .ic{font-size:17px;line-height:1;margin-bottom:5px;display:block}
 .quick .t{font-size:11px;color:var(--mut);margin-bottom:1px}
 .quick .v{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
 
-.seg{display:flex;background:#EDF0F6;border-radius:12px;padding:3px;margin-bottom:12px}
-.seg button{flex:1;padding:7px 0;border-radius:9px;font-size:13px;color:#667085;font-weight:600;transition:.18s}
+.seg{display:flex;background:#EDF0F6;border-radius:12px;padding:3px;margin-bottom:12px;position:relative}
+.seg button{flex:1;padding:7px 0;border-radius:9px;font-size:13px;color:#667085;font-weight:600;transition:.2s cubic-bezier(.2,.8,.2,1)}
 .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(16,24,40,.12)}
 
 .daysep{display:flex;justify-content:space-between;align-items:center;padding:14px 4px 6px;font-size:11.5px;color:var(--mut);font-weight:600}
-.daysep span:last-child{font-variant-numeric:tabular-nums}
-.li{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.li{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line);transition:.15s;border-radius:10px}
+.li:active{background:#F7F9FC}
 .li:last-child{border-bottom:0}
 .cico{width:38px;height:38px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto;background:#F4F6FB}
 .li .l{flex:1;min-width:0}
@@ -90,7 +107,7 @@ main{padding:2px 14px 12px}
 .empty .big{font-size:34px;display:block;margin-bottom:10px;opacity:.5}
 
 .bar{height:7px;border-radius:6px;background:#EEF1F6;overflow:hidden}
-.bar>i{display:block;height:100%;border-radius:6px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.bar>i{display:block;height:100%;border-radius:6px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
 .catrow{padding:12px 0;border-bottom:1px solid var(--line)}
 .catrow:last-child{border-bottom:0;padding-bottom:0}
 .catrow .t{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px}
@@ -123,7 +140,10 @@ main{padding:2px 14px 12px}
 .acct .sub{font-size:10.5px;color:var(--mut);margin-top:1px}
 .acct .val{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .acct .val.neg{color:var(--red)}
-.acct.new{justify-content:center;color:var(--blue);font-size:13px;font-weight:650;padding:12px 0}
+.acct input{width:118px;padding:7px 9px;border:1px solid #E4E8F0;border-radius:10px;background:#FAFBFD;
+  font-size:14.5px;font-variant-numeric:tabular-nums;text-align:right;transition:.15s}
+.acct input:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.acct.new{justify-content:center;color:var(--blue);font-size:13px;font-weight:650;padding:12px 0;border-bottom:0}
 .acct.new:active{background:#F4F7FF;border-radius:12px}
 .tot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;font-weight:650;font-size:13.5px}
 .tot .big{font-size:17px;font-variant-numeric:tabular-nums}
@@ -135,13 +155,13 @@ main{padding:2px 14px 12px}
 .trow .vv{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums}
 
 .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
-.tgcard{text-align:center;padding:8px 2px;border-radius:14px}
-.tgcard:active{background:#F7F9FC}
+.tgcard{text-align:center;padding:8px 2px;border-radius:14px;transition:.16s}
+.tgcard:active{background:#F7F9FC;transform:scale(.97)}
 .ringsmall{width:58px;height:58px;display:block;margin:0 auto}
 .ringwrap2{position:relative;width:58px;height:58px;margin:0 auto}
 .ringtxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .ringtxt.dim{color:#C3CAD6;font-weight:500;font-size:14px}
-.tgname{font-size:11px;margin-top:5px;color:var(--ink2);font-weight:600}
+.tgname{font-size:11px;margin-top:5px;color:var(--ink2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tgval{font-size:9.5px;color:var(--mut);font-variant-numeric:tabular-nums}
 
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -152,23 +172,22 @@ main{padding:2px 14px 12px}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);
   background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(16,24,40,.06);
   padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
-nav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#98A2B3;font-weight:600;padding:4px 0}
-nav .nb .ic{font-size:19px;line-height:1;filter:grayscale(1);opacity:.42;transition:.16s}
+nav .nb{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#98A2B3;font-weight:600;padding:4px 0;transition:.16s}
+nav .nb .ic{font-size:19px;line-height:1;filter:grayscale(1);opacity:.42;transition:.2s}
 nav .nb.on{color:var(--navy)}
 nav .nb.on .ic{filter:none;opacity:1;transform:translateY(-1px)}
 nav .fab{width:52px;height:52px;border-radius:50%;margin:0 auto;align-self:center;
   transform:translateY(-13px);background:linear-gradient(135deg,#2C3E68,#1B2A4A);color:#fff;
   font-size:26px;font-weight:300;display:flex;align-items:center;justify-content:center;
   box-shadow:0 8px 22px rgba(23,37,64,.34);border:3px solid #fff;transition:.15s}
-nav .fab:active{transform:translateY(-13px) scale(.94)}
+nav .fab:active{transform:translateY(-13px) scale(.92)}
 
 .modal{position:fixed;inset:0;z-index:95;display:none;align-items:flex-end;justify-content:center;
-  background:rgba(15,23,42,.44);backdrop-filter:blur(2px)}
+  background:rgba(15,23,42,.44);backdrop-filter:blur(2px);animation:fadeIn .2s}
 .modal.on{display:flex}
 .sheet{background:#fff;width:100%;max-width:560px;border-radius:22px 22px 0 0;
   padding:18px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;
-  animation:up .24s cubic-bezier(.2,.8,.2,1)}
-@keyframes up{from{transform:translateY(26px);opacity:.6}to{transform:none;opacity:1}}
+  animation:up .26s cubic-bezier(.2,.8,.2,1)}
 .sheet h3{margin:0 0 14px;font-size:16.5px;font-weight:700}
 .sheet .grab{width:36px;height:4px;border-radius:3px;background:#E4E8F0;margin:-6px auto 12px}
 .field{margin-bottom:12px}
@@ -176,42 +195,45 @@ nav .fab:active{transform:translateY(-13px) scale(.94)}
 .inp{width:100%;padding:11px 12px;border:1px solid #E4E8F0;border-radius:13px;background:#FAFBFD;
   font-size:15px;font-variant-numeric:tabular-nums;transition:.16s}
 .inp:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.13)}
-.sbtn{width:100%;padding:13px;border-radius:14px;background:#F1F4F9;font-size:14.5px;font-weight:650;margin-top:8px;text-align:center}
-.sbtn:active{background:#E6EBF4}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#98A2B3 50%),linear-gradient(135deg,#98A2B3 50%,transparent 50%);
+  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.sbtn{width:100%;padding:13px;border-radius:14px;background:#F1F4F9;font-size:14.5px;font-weight:650;margin-top:8px;text-align:center;transition:.14s}
+.sbtn:active{background:#E6EBF4;transform:scale(.99)}
 .sbtn.primary{background:linear-gradient(135deg,#1B2A4A,#2C3E68);color:#fff}
 .sbtn.danger{color:var(--red)}
 
 .padwrap{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;background:var(--bg)}
-.padwrap.on{display:flex;animation:slidesheet .26s cubic-bezier(.2,.8,.2,1)}
-@keyframes slidesheet{from{transform:translateY(100%)}to{transform:none}}
+.padwrap.on{display:flex;animation:slideIn .28s cubic-bezier(.2,.8,.2,1)}
 .padhead{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 16px 6px}
-.padhead .x{width:32px;height:32px;border-radius:10px;background:#EAEEF6;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink2)}
+.padhead .x{width:32px;height:32px;border-radius:10px;background:#EAEEF6;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink2);transition:.15s}
+.padhead .x:active{transform:scale(.92)}
 .padhead .ttl{font-size:15px;font-weight:700}
 .padbody{flex:1;overflow-y:auto;padding:4px 16px 8px}
-.padfoot{padding:8px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg)}
 .amt{font-size:42px;font-weight:750;letter-spacing:-1.6px;font-variant-numeric:tabular-nums;line-height:1.15;padding:6px 0 2px}
 .amt .c{font-size:22px;color:var(--mut);margin-right:5px;font-weight:600}
-.catgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.catb{background:#fff;border-radius:16px;padding:9px 3px 7px;text-align:center;box-shadow:var(--shadow);
-  border:1.8px solid transparent;transition:.14s}
-.catb .n{font-size:11.5px;font-weight:650;line-height:1.15}
-.catb .r{font-size:9px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums;line-height:1.1;height:11px;overflow:hidden}
-.catb.on{border-color:var(--blue);background:#F2F7FF;box-shadow:0 4px 14px rgba(59,130,246,.18)}
-.catb.on .n{color:#1D4ED8}
-.catb .r.neg{color:var(--red);font-weight:700}
-.chips{display:flex;gap:7px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chips button{flex:0 0 auto;padding:7px 13px;border-radius:20px;background:#fff;font-size:12.5px;color:#475467;
-  box-shadow:var(--shadow);border:1.4px solid transparent}
-.chips button.on{background:var(--navy);color:#fff;box-shadow:0 4px 12px rgba(15,23,42,.24)}
-.keypad{display:grid;grid-template-columns:repeat(3,1fr) 82px;gap:8px;margin-top:10px}
-.keypad button{height:50px;border-radius:14px;background:#fff;font-size:21px;font-weight:650;
-  display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
-.keypad button:active{background:#EDF1F8;transform:scale(.97)}
-.keypad button.del{background:#FEF1F0;color:var(--red);font-size:17px;box-shadow:none}
-.keypad button.ok{grid-row:span 4;height:auto;background:linear-gradient(140deg,#2C3E68,#1B2A4A);
-  color:#fff;font-size:15px;font-weight:700;box-shadow:0 6px 18px rgba(23,37,64,.28)}
-.keypad button.ok:disabled{opacity:.32;box-shadow:none;background:#CBD3E1}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dchip{font-size:12px;color:var(--mut);padding:4px 10px;border-radius:14px;background:#F1F3F6}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cat{padding:11px 4px 9px;border-radius:13px;background:#F7F8FA;text-align:center;border:1.5px solid transparent;transition:.14s}
+.cat:active{transform:scale(.96)}
+.cat .n{font-size:14px;font-weight:600}
+.cat .r{font-size:10.5px;color:var(--mut);margin-top:3px;font-variant-numeric:tabular-nums;min-height:14px}
+.cat.on{background:#E9F0FF;border-color:var(--blue);box-shadow:0 4px 14px rgba(59,130,246,.18)}
+.cat.on .n{color:#1D4ED8}
+.cat .r.neg{color:var(--red);font-weight:600}
+.tg{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.tg::-webkit-scrollbar{display:none}
+.tg button{flex:0 0 auto;padding:7px 14px;border-radius:20px;background:#fff;font-size:13px;color:#4B5563;
+  box-shadow:var(--shadow);border:1.4px solid transparent;transition:.16s}
+.tg button:active{transform:scale(.96)}
+.tg button.on{background:var(--navy);color:#fff;box-shadow:0 4px 12px rgba(15,23,42,.2)}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.kp button{height:50px;border-radius:13px;background:#F4F5F7;font-size:20px;font-weight:600;transition:.1s}
+.kp button:active{background:#E6E8EC;transform:scale(.96)}
+.padsave{height:52px;border-radius:13px;width:100%;margin-top:12px;color:#fff;font-size:16px;font-weight:650;
+  background:linear-gradient(135deg,#1F3864,#2F5AA8);box-shadow:0 8px 20px -10px rgba(31,56,100,.7);transition:.14s}
+.padsave:active{transform:scale(.985);opacity:.95}
+.padsave.dis{opacity:.35;box-shadow:none}
 
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(12px);
   background:rgba(16,24,40,.94);color:#fff;padding:11px 19px;border-radius:24px;font-size:13px;
@@ -230,31 +252,16 @@ details[open] summary:after{content:" ▴"}
 .prow{display:grid;grid-template-columns:1fr 62px;gap:8px;align-items:center;padding:6px 0;font-size:13px}
 .prow input{padding:6px 8px;font-size:14px;text-align:right;border:1px solid #E4E8F0;border-radius:9px;background:#FAFBFD;width:100%}
 .pre{display:flex;gap:8px;margin:8px 0 12px}
-.pre button{flex:1;padding:9px 4px;border-radius:12px;background:#F1F4F9;font-size:11.5px;font-weight:650;line-height:1.3}
+.pre button{flex:1;padding:9px 4px;border-radius:12px;background:#F1F4F9;font-size:11.5px;font-weight:650;line-height:1.3;transition:.15s}
+.pre button:active{transform:scale(.97)}
 .pre button.on{background:var(--navy);color:#fff}
-
-/* ---------- 记一笔（沿用 v5 布局） ---------- */
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.dchip{font-size:12px;color:var(--mut);padding:4px 10px;border-radius:14px;background:#F1F3F6}
-.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cat{padding:11px 4px 9px;border-radius:13px;background:#F7F8FA;text-align:center;border:1.5px solid transparent;transition:.12s}
-.cat:active{transform:scale(.97)}
-.cat .n{font-size:14px;font-weight:600}
-.cat .r{font-size:10.5px;color:var(--mut);margin-top:3px;font-variant-numeric:tabular-nums;min-height:14px}
-.cat.on{background:#E9F0FF;border-color:var(--blue)}
-.cat.on .n{color:#1D4ED8}
-.cat .r.neg{color:var(--red);font-weight:600}
-.tg{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
-.tg::-webkit-scrollbar{display:none}
-.tg button{flex:0 0 auto;padding:7px 14px;border-radius:20px;background:#F7F8FA;font-size:13px;color:#4B5563}
-.tg button.on{background:var(--navy);color:#fff}
-.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.kp button{height:50px;border-radius:13px;background:#F4F5F7;font-size:20px;font-weight:600}
-.kp button:active{background:#E6E8EC}
-.padsave{height:52px;border-radius:13px;width:100%;margin-top:12px;color:#fff;font-size:16px;font-weight:650;
-  background:linear-gradient(135deg,#1F3864,#2F5AA8);box-shadow:0 8px 20px -10px rgba(31,56,100,.7)}
-.padsave:active{transform:scale(.99);opacity:.94}
-.padsave.dis{opacity:.35;box-shadow:none}
+.note{width:100%;margin-top:10px;padding:10px 12px;border:1px solid #E4E8F0;border-radius:12px;background:#FAFBFD;font-size:14px}
+.note:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.tglrow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+.tglrow:last-child{border-bottom:0}
+.tglrow .l{font-size:14px;font-weight:600}
+.tglrow .r{display:flex;align-items:center;gap:8px}
+.tglrow .del{font-size:12px;color:var(--red);padding:5px 10px;border-radius:9px;background:#FEF1F0}
 </style>
 </head>
 <body>
@@ -318,6 +325,7 @@ details[open] summary:after{content:" ▴"}
         <div class="pre" id="presets"></div>
         <div id="pctGrid"></div>
         <div class="h" style="margin:10px 0 0"><span class="mini">合计</span><span class="mono" id="pctSum">—</span></div>
+        <div class="mini" style="margin-top:8px">改了任一小类，上面三档的占比会同步重算。</div>
       </details>
     </div>
   </section>
@@ -371,6 +379,11 @@ details[open] summary:after{content:" ▴"}
         <div class="h"><b>各标的</b><span class="sub">点一行改目标 / 市值</span></div>
         <div id="tList"></div>
       </div>
+      <div class="card">
+        <div class="h"><b>管理标的</b><span class="sub">增删 + 归类</span></div>
+        <div id="tglList"></div>
+        <div class="acct new" id="addTg">+ 添加投资标的</div>
+      </div>
     </div>
   </section>
 
@@ -391,7 +404,7 @@ details[open] summary:after{content:" ▴"}
       <button class="sbtn" id="btnImport">导入备份</button>
       <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
       <button class="sbtn danger" id="btnWipe">清空全部数据</button>
-      <div class="mini" style="margin-top:10px">数据只存在这台手机。换手机或清缓存前，一定先导出。</div>
+      <div class="mini" style="margin-top:10px">数据只存在这台设备。换手机或清缓存前，一定先导出。</div>
     </div>
   </section>
 </main>
@@ -417,6 +430,7 @@ details[open] summary:after{content:" ▴"}
       <div class="seg" id="typeSeg"><button data-t="exp" class="on">支出</button><button data-t="inc">收入</button></div>
       <div class="cats" id="catGrid"></div>
       <div id="tgWrap" style="display:none"><div class="tg" id="tgList"></div></div>
+      <input class="note" id="noteIn" type="text" placeholder="备注（可选）" maxlength="60">
       <div class="kp" id="kp"></div>
       <button class="padsave dis" id="btnSave">记一笔</button>
       <input type="date" id="dateIn" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
@@ -434,10 +448,14 @@ var BUD=['吃饭','交通','日用','娱乐','购物','社交','投资','储蓄'
 var SPEND=['吃饭','交通','日用','娱乐','购物','社交'];
 var INC=['工资','其他收入'];
 var C_INVEST='投资', C_SAVE='储蓄', C_DEBT='还款';
-var TARGETS=['沪深300','股票','QDII','食品饮料','黄金','债券'];
-var T2A={'沪深300':'fund','QDII':'fund','食品饮料':'fund','股票':'stock','债券':'bond','黄金':'gold'};
 var ACCT_GROUPS=[{k:'inv',n:'投资账户'},{k:'cash',n:'现金账户'},{k:'other',n:'其他账户'}];
 var LIABS=[{id:'l_douyin',n:'抖音月付'},{id:'l_baitiao',n:'京东白条'}];
+var CATS_INV=['fund','stock','bond','gold'];
+var CAT_NAME={fund:'基金',stock:'股票',bond:'债券',gold:'黄金'};
+var DEF_TARGETS=[
+  {n:'沪深300',cat:'fund'},{n:'QDII',cat:'fund'},{n:'食品饮料',cat:'fund'},
+  {n:'股票',cat:'stock'},{n:'债券',cat:'bond'},{n:'黄金',cat:'gold'}
+];
 var PRESETS={
   steady:{n:'稳健 50/30/20',map:{'吃饭':0.24,'交通':0.10,'日用':0.16,'娱乐':0.12,'购物':0.10,'社交':0.08,'投资':0.12,'储蓄':0.08}},
   balance:{n:'均衡 45/15/40',map:{'吃饭':0.24,'交通':0.10,'日用':0.11,'娱乐':0.07,'购物':0.05,'社交':0.03,'投资':0.25,'储蓄':0.15}},
@@ -447,14 +465,17 @@ function pad2(n){return n<10?'0'+n:''+n;}
 function mk(y,m){return y+'-'+pad2(m);}
 function inM(e,k){return e.d.slice(0,7)===k;}
 function sumC(list,c){var t=0;for(var i=0;i<list.length;i++){if(list[i].c===c)t+=list[i].a;}return t;}
+function tlist(state){return (state.s.targets&&state.s.targets.length)?state.s.targets:DEF_TARGETS;}
+function tnames(state){var l=tlist(state),a=[];for(var i=0;i<l.length;i++)a.push(l[i].n);return a;}
+function catOf(state,n){var l=tlist(state);for(var i=0;i<l.length;i++)if(l[i].n===n)return l[i].cat;return null;}
 function defaultAcc(){
   return [
-    {id:'a_fund', n:'基金',  g:'inv',  auto:'fund', ic:'📈'},
-    {id:'a_stock',n:'股票',  g:'inv',  auto:'stock',ic:'📊'},
-    {id:'a_bond', n:'债券',  g:'inv',  auto:'bond', ic:'🧾'},
-    {id:'a_gold', n:'黄金',  g:'inv',  auto:'gold', ic:'🪙'},
-    {id:'a_cash', n:'流动资产',g:'cash',auto:'cash', ic:'💳'},
-    {id:'a_save', n:'储蓄',  g:'cash', auto:'save', ic:'🏦'}
+    {id:'a_fund', n:'基金',  g:'inv',  auto:'fund'},
+    {id:'a_stock',n:'股票',  g:'inv',  auto:'stock'},
+    {id:'a_bond', n:'债券',  g:'inv',  auto:'bond'},
+    {id:'a_gold', n:'黄金',  g:'inv',  auto:'gold'},
+    {id:'a_cash', n:'流动资产',g:'cash',auto:'cash'},
+    {id:'a_save', n:'储蓄',  g:'cash', auto:'save'}
   ];
 }
 function calcMonth(state,k){
@@ -476,8 +497,9 @@ function calcMonth(state,k){
 function flowsOf(state,k){
   var list=state.e.filter(function(e){return inM(e,k);});
   var income=0,spend=0,save=0,repaySum=0,investSum=0,invest={},repay={};
-  TARGETS.forEach(function(t){invest[t]=0;});
-  LIABS.forEach(function(p){repay[p.id]=0;});
+  var ns=tnames(state);
+  for(var i=0;i<ns.length;i++)invest[ns[i]]=0;
+  for(var j=0;j<LIABS.length;j++)repay[LIABS[j].id]=0;
   list.forEach(function(e){
     if(INC.indexOf(e.c)>=0){income+=e.a;}
     else if(SPEND.indexOf(e.c)>=0){spend+=e.a;}
@@ -498,17 +520,18 @@ function monthsBetween(state,upto){
 function seriesUpTo(state,upto){
   var months=monthsBetween(state,upto);
   var cash=0,save=0,mv={},liab={},manual={};
-  TARGETS.forEach(function(t){mv[t]=0;});
-  LIABS.forEach(function(p){liab[p.id]=0;});
-  for(var i=0;i<months.length;i++){
-    var m=months[i],f=flowsOf(state,m),b=state.bal[m]||{};
+  var ns=tnames(state);
+  for(var i=0;i<ns.length;i++)mv[ns[i]]=0;
+  for(var j=0;j<LIABS.length;j++)liab[LIABS[j].id]=0;
+  for(var m=0;m<months.length;m++){
+    var mo=months[m],f=flowsOf(state,mo),b=state.bal[mo]||{};
     var adj=b.adj||{},mvAdj=b.mvAdj||{};
     cash=cash+f.income-f.spend-f.investSum-f.save-f.repaySum+(Number(adj['a_cash'])||0);
     save=save+f.save+(Number(adj['a_save'])||0);
-    TARGETS.forEach(function(t){mv[t]=mv[t]+f.invest[t]+(Number(mvAdj[t])||0);});
-    LIABS.forEach(function(p){liab[p.id]=liab[p.id]-f.repay[p.id]+(Number(adj[p.id])||0);});
+    for(var t=0;t<ns.length;t++){var n=ns[t];mv[n]=mv[n]+(f.invest[n]||0)+(Number(mvAdj[n])||0);}
+    for(var p=0;p<LIABS.length;p++){var pid=LIABS[p].id;liab[pid]=liab[pid]-f.repay[pid]+(Number(adj[pid])||0);}
     (state.acc||[]).forEach(function(a){
-      if(!a.auto){manual[a.id]=(manual[a.id]||0)+(Number(adj[a.id])||0);}
+      if(!a.auto||CATS_INV.indexOf(a.auto)>=0){manual[a.id]=(manual[a.id]||0)+(Number(adj[a.id])||0);}
     });
   }
   return {cash:cash,save:save,mv:mv,liab:liab,manual:manual};
@@ -517,9 +540,9 @@ function accValue(state,k,acc){
   var s=seriesUpTo(state,k);
   if(acc.auto==='cash')return s.cash;
   if(acc.auto==='save')return s.save;
-  if(acc.auto){
-    var tot=0;
-    TARGETS.forEach(function(t){if(T2A[t]===acc.auto)tot+=s.mv[t]||0;});
+  if(acc.auto&&CATS_INV.indexOf(acc.auto)>=0){
+    var tot=Number(s.manual[acc.id])||0,ns=tnames(state);
+    for(var i=0;i<ns.length;i++){if(catOf(state,ns[i])===acc.auto)tot+=s.mv[ns[i]]||0;}
     return tot;
   }
   return s.manual[acc.id]||0;
@@ -527,7 +550,8 @@ function accValue(state,k,acc){
 function netWorth(state,k){
   var a=0,l=0;
   (state.acc||[]).forEach(function(x){a+=accValue(state,k,x);});
-  LIABS.forEach(function(p){l+=Number(seriesUpTo(state,k).liab[p.id])||0;});
+  var s=seriesUpTo(state,k);
+  LIABS.forEach(function(p){l+=Number(s.liab[p.id])||0;});
   return {assets:a,liabs:l,net:a-l};
 }
 function investedYear(state,year,t){
@@ -537,16 +561,29 @@ function investedYear(state,year,t){
 }
 function newState(){
   var d=new Date();
-  return {v:4,s:{y:d.getFullYear(),m:d.getMonth()+1,preset:'balance',pct:JSON.parse(JSON.stringify(PRESETS.balance.map)),goals:{}},e:[],bal:{},acc:defaultAcc()};
+  return {v:5,s:{y:d.getFullYear(),m:d.getMonth()+1,preset:'balance',
+    pct:JSON.parse(JSON.stringify(PRESETS.balance.map)),goals:{},
+    targets:JSON.parse(JSON.stringify(DEF_TARGETS))},e:[],bal:{},acc:defaultAcc()};
 }
 /*__CORE_END__*/
 
 var KEY='pft.v4';
 var S=loadState();
-var ui={type:'exp',cat:null,tg:null,amount:'0',date:'',filter:'all',pane:'asset'};
+var ui={type:'exp',cat:null,tg:null,amount:'0',date:'',note:'',filter:'all',pane:'asset'};
 
 function loadState(){
-  try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&o.v===4){if(!o.acc||!o.acc.length)o.acc=defaultAcc();return o;}}}catch(e){}
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw){
+      var o=JSON.parse(raw);
+      if(o&&(o.v===4||o.v===5)){
+        if(!o.acc||!o.acc.length)o.acc=defaultAcc();
+        if(!o.s.targets||!o.s.targets.length)o.s.targets=JSON.parse(JSON.stringify(DEF_TARGETS));
+        o.v=5;
+        return o;
+      }
+    }
+  }catch(e){}
   return newState();
 }
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('保存失败：空间不足');}}
@@ -561,14 +598,14 @@ function pad(n){return n<10?'0'+n:''+n;}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function $(s){return document.querySelector(s);}
-function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('on');},1600);}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('on');},1700);}
 function download(name,text,mime){var b=new Blob([text],{type:mime||'application/json;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);}
 function balOf(k){if(!S.bal[k])S.bal[k]={adj:{},mvAdj:{}};if(!S.bal[k].adj)S.bal[k].adj={};if(!S.bal[k].mvAdj)S.bal[k].mvAdj={};return S.bal[k];}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 /* ---------- 图表 ---------- */
-var COLORS=['#3B82F6','#12B76A','#F79009','#7A5AF8','#36BFFA','#F04438','#8A93A6','#EC4899'];
-var TCOLORS=['#3B82F6','#12B76A','#F79009','#7A5AF8','#36BFFA','#F04438'];
+var COLORS=['#3B82F6','#12B76A','#F79009','#7A5AF8','#36BFFA','#F04438','#8A93A6','#EC4899','#0EA5E9','#84CC16'];
+var TCOLORS=COLORS;
 
 function lineChartSVG(pts,color){
   color=color||'#3B82F6';
@@ -590,9 +627,9 @@ function lineChartSVG(pts,color){
     return '<text x="'+X(i).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" style="font-size:8.5px;fill:#98A2B3">'+p.label+'</text>';
   }).join('');
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">'+
-    '<defs><linearGradient id="lgd'+color.replace('#','')+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<defs><linearGradient id="lgd" x1="0" y1="0" x2="0" y2="1">'+
     '<stop offset="0%" stop-color="'+color+'" stop-opacity=".22"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
-    '<path d="'+area+'" fill="url(#lgd'+color.replace('#','')+')"></path>'+
+    '<path d="'+area+'" fill="url(#lgd)"></path>'+
     '<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"></path>'+
     dots+labels+'</svg>';
 }
@@ -646,8 +683,7 @@ function lastMonths(k,n){
 /* ---------- 首页 ---------- */
 function renderHome(){
   var k=curKey(),f=flowsOf(S,k),m=calcMonth(S,k);
-  var expense=f.spend+f.repaySum;
-  var bal=f.income-expense;
+  var expense=f.spend+f.repaySum,bal=f.income-expense;
   $('#hBal').textContent=fmt(bal);
   $('#hIn').textContent=short(f.income);
   $('#hOut').textContent=short(expense);
@@ -665,7 +701,6 @@ function renderHome(){
   var st=invStats();
   $('#qInv').textContent=st.goal>0?Math.round(st.put/st.goal*100)+'%':'—';
 
-  // 净资产走势
   var months=lastMonths(k,12);
   var pts=months.map(function(x){return {label:x.label,v:netWorth(S,x.k).net};});
   $('#nwChart').innerHTML=lineChartSVG(pts,'#3B82F6');
@@ -680,6 +715,10 @@ function renderHome(){
   renderFlowList('#homeFlow',calcMonth(S,k).list.slice().sort(function(a,b){return a.d<b.d?1:(a.d>b.d?-1:0);}),6);
   $('#listCount').textContent=calcMonth(S,k).list.length+' 笔';
 }
+function catEmoji(c){
+  var m={'吃饭':'🍚','交通':'🚇','日用':'🧴','娱乐':'🎬','购物':'🛍','社交':'🍻','投资':'📈','储蓄':'🏦','还款':'💳'};
+  return m[c]||'🧾';
+}
 function flowRows(list){
   var h='',last='';
   list.forEach(function(e){
@@ -687,19 +726,16 @@ function flowRows(list){
     var isInc=INC.indexOf(e.c)>=0;
     var tag='';
     if(e.tg){
-      if(TARGETS.indexOf(e.tg)>=0)tag='<span class="tag b">'+esc(e.tg)+'</span>';
+      if(catOf(S,e.tg))tag='<span class="tag b">'+esc(e.tg)+'</span>';
       else{var p=LIABS.filter(function(x){return x.id===e.tg;})[0];if(p)tag='<span class="tag r">'+esc(p.n)+'</span>';}
     }
+    var subTxt=e.d+(e.n?(' · '+esc(e.n)):(isInc?' · 收入':''));
     h+='<div class="li" data-e="'+e.id+'">'+
       '<div class="cico">'+(isInc?'💰':catEmoji(e.c))+'</div>'+
-      '<div class="l"><b>'+esc(e.c)+tag+'</b><div class="s">'+e.d+(isInc?' · 收入':'')+'</div></div>'+
+      '<div class="l"><b>'+esc(e.c)+tag+'</b><div class="s">'+subTxt+'</div></div>'+
       '<div class="amt'+(isInc?' inc':'')+'">'+(isInc?'+':'-')+fmt(e.a)+'</div></div>';
   });
   return h||'<div class="empty"><span class="big">🧾</span>还没有记录</div>';
-}
-function catEmoji(c){
-  var m={'吃饭':'🍚','交通':'🚇','日用':'🧴','娱乐':'🎬','购物':'🛍','社交':'🍻','投资':'📈','储蓄':'🏦','还款':'💳'};
-  return m[c]||'🧾';
 }
 function renderFlowList(sel,list,limit){
   var l=limit?list.slice(0,limit):list;
@@ -733,17 +769,20 @@ function renderBudget(){
   $('#bLeft').textContent=fmtW(left);
   $('#bLeft').style.color=left<0?'var(--red)':'var(--ink)';
 
-  var host=$('#budGroups');host.innerHTML='<div class="h"><b>三档预算</b><span class="sub">50/30/20 框架</span></div>';
+  var host=$('#budGroups');host.innerHTML='<div class="h"><b>三档预算</b><span class="sub">随小类联动</span></div>';
   GROUPS.forEach(function(gr){
     var g=m.groups[gr.k];
     var p=g.budget>0?Math.min(g.used/g.budget,1):0;
     var cl=p>=1?'#F04438':(p>=0.85?'#F79009':'#3B82F6');
+    var share=m.base>0?(g.budget/m.base*100):0;
     var d=document.createElement('div');d.className='catrow';
-    var h='<div class="t"><b>'+gr.n+'</b><span class="v">'+fmtW(g.used)+' / '+fmtW(g.budget)+'</span></div>'+
+    var h='<div class="t"><b>'+gr.n+' <span class="mini" style="font-weight:600">'+share.toFixed(0)+'%</span></b>'+
+      '<span class="v">'+fmtW(g.used)+' / '+fmtW(g.budget)+'</span></div>'+
       '<div class="bar"><i style="width:'+(p*100).toFixed(1)+'%;background:'+cl+'"></i></div>';
     gr.items.forEach(function(c){
       var b=m.budget[c],u=m.used[c],pp=b>0?Math.min(u/b,1):0;
-      h+='<div class="subrow"><span>'+c+'</span><span class="'+(b-u<0?'bad':'')+'">'+fmtW(u)+' / '+fmtW(b)+'</span></div>';
+      var sh2=m.base>0?(b/m.base*100):0;
+      h+='<div class="subrow"><span>'+c+' <span class="mini">'+(sh2?sh2.toFixed(0)+'%':'')+'</span></span><span class="'+(b-u<0?'bad':'')+'">'+fmtW(u)+' / '+fmtW(b)+'</span></div>';
     });
     d.innerHTML=h;host.appendChild(d);
   });
@@ -794,15 +833,31 @@ function renderAssets(){
     groups[g.k].forEach(function(a){
       var v=accValue(S,k,a);
       var d=document.createElement('div');d.className='acct';
-      d.innerHTML='<div><div class="nm">'+esc(a.n)+'</div><div class="sub">'+(a.auto?'自动':'手动')+'</div></div>'+
-        '<div class="val'+(v<0?' neg':'')+'">'+fmt(v)+'</div>';
-      d.onclick=function(){openAccSheet(a);};
+      var isInv=CATS_INV.indexOf(a.auto)>=0;
+      var hint=a.auto?(isInv?'自动合计，可改':'自动'):'手动';
+      d.innerHTML='<div><div class="nm">'+esc(a.n)+'</div><div class="sub">'+hint+'</div></div>'+
+        '<input type="number" inputmode="decimal" step="0.01" value="'+v.toFixed(2)+'" data-acc="'+a.id+'">';
       host.appendChild(d);
     });
     var add=document.createElement('div');add.className='acct new';
     add.textContent='+ 添加'+g.n;
     add.onclick=function(){openNewAccSheet(g.k);};
     host.appendChild(add);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-acc]'),function(inp){
+    inp.onchange=function(){
+      var id=inp.getAttribute('data-acc');
+      var acc=(S.acc||[]).filter(function(x){return x.id===id;})[0];
+      if(!acc)return;
+      var v=parseFloat(inp.value);if(isNaN(v))v=0;
+      if(CATS_INV.indexOf(acc.auto)>=0){setCatValue(acc.auto,v);}
+      else{
+        var cur=accValue(S,curKey(),acc),b=balOf(curKey());
+        b.adj[acc.id]=(Number(b.adj[acc.id])||0)+(v-cur);
+      }
+      persist();renderAll();
+    };
   });
 
   var lh=$('#grpLiab');lh.innerHTML='';
@@ -814,9 +869,17 @@ function renderAssets(){
     var v=Number(s.liab[p.id])||0;
     var d=document.createElement('div');d.className='acct';
     d.innerHTML='<div><div class="nm">'+esc(p.n)+'</div><div class="sub">还款自动抵扣</div></div>'+
-      '<div class="val'+(v<0?' neg':'')+'">'+fmt(v)+'</div>';
-    d.onclick=function(){openLiabSheet(p);};
+      '<input type="number" inputmode="decimal" step="0.01" value="'+v.toFixed(2)+'" data-liab="'+p.id+'">';
     lh.appendChild(d);
+  });
+  Array.prototype.forEach.call(lh.querySelectorAll('[data-liab]'),function(inp){
+    inp.onchange=function(){
+      var id=inp.getAttribute('data-liab');
+      var v=parseFloat(inp.value);if(isNaN(v))v=0;
+      var cur=Number(seriesUpTo(S,curKey()).liab[id])||0,b=balOf(curKey());
+      b.adj[id]=(Number(b.adj[id])||0)+(v-cur);
+      persist();renderAll();
+    };
   });
 
   var nw=netWorth(S,k);
@@ -836,9 +899,34 @@ function renderAssets(){
   });
   renderInvRings();
 }
+function setCatValue(cat,v){
+  var k=curKey(),s=seriesUpTo(S,k);
+  var names=tnames(S).filter(function(n){return catOf(S,n)===cat;});
+  if(!names.length){
+    var accs=(S.acc||[]).filter(function(a){return a.auto===cat;});
+    if(!accs.length){toast('「'+CAT_NAME[cat]+'」下还没有标的');return;}
+    var bb=balOf(k);
+    bb.adj[accs[0].id]=v;
+    return;
+  }
+  var cur=0;names.forEach(function(n){cur+=Number(s.mv[n])||0;});
+  var delta=v-cur;
+  if(Math.abs(delta)<0.005)return;
+  var b=balOf(k);
+  if(cur<=0){
+    b.mvAdj[names[0]]=(Number(b.mvAdj[names[0]])||0)+delta;
+  }else{
+    var acc=0;
+    names.forEach(function(n,i){
+      var share=(i===names.length-1)?(delta-acc):Math.round(delta*((Number(s.mv[n])||0)/cur)*100)/100;
+      acc+=share;
+      b.mvAdj[n]=(Number(b.mvAdj[n])||0)+share;
+    });
+  }
+}
 function invStats(){
   var k=curKey(),y=S.s.y,s=seriesUpTo(S,k),put=0,goal=0;
-  TARGETS.forEach(function(t){
+  tnames(S).forEach(function(t){
     put+=investedYear(S,y,t);
     goal+=Number((S.s.goals[t]||{}).goal)||0;
   });
@@ -852,7 +940,7 @@ function renderInvRings(){
   $('#invRatio').textContent=st.goal>0?Math.round(pct*100)+'%':'—';
   $('#invBar').style.width=(pct*100).toFixed(1)+'%';
   var host=$('#tgGrid');host.innerHTML='';
-  TARGETS.forEach(function(t,i){
+  tnames(S).forEach(function(t,i){
     var goal=Number((S.s.goals[t]||{}).goal)||0;
     var mv=Number(st.s.mv[t])||0;
     var p=goal>0?Math.min(mv/goal,1):0;
@@ -888,28 +976,55 @@ function renderInvest(){
   var mb=$('#mBars');mb.innerHTML='';
   if(f.investSum<=0){mb.innerHTML='<div class="mini" style="padding:6px 0">本月还没记投资</div>';}
   else{
-    var mx=0;TARGETS.forEach(function(t){mx=Math.max(mx,f.invest[t]||0);});
-    TARGETS.forEach(function(t,i){
+    var mx=0;tnames(S).forEach(function(t){mx=Math.max(mx,f.invest[t]||0);});
+    tnames(S).forEach(function(t,i){
       var v=f.invest[t]||0;if(v<=0)return;
       var d=document.createElement('div');
-      d.innerHTML='<div class="subrow" style="border:0;padding:7px 0"><span>'+esc(t)+'</span><span>'+fmtW(v)+'</span></div>'+
+      d.innerHTML='<div class="subrow" style="border:0;padding:7px 0"><span>'+esc(t)+' <span class="tag b">'+CAT_NAME[catOf(S,t)]+'</span></span><span>'+fmtW(v)+'</span></div>'+
         '<div class="bar" style="margin:-3px 0 6px"><i style="width:'+(v/mx*100).toFixed(1)+'%;background:'+TCOLORS[i%TCOLORS.length]+'"></i></div>';
       mb.appendChild(d);
     });
   }
 
   var tl=$('#tList');tl.innerHTML='';
-  TARGETS.forEach(function(t,i){
+  tnames(S).forEach(function(t,i){
     var goal=Number((S.s.goals[t]||{}).goal)||0;
     var mv=Number(st.s.mv[t])||0;
     var put=investedYear(S,st.y,t);
     var p=goal>0?Math.min(mv/goal,1):0;
     var d=document.createElement('div');d.className='trow';
-    d.innerHTML='<div class="top"><span class="nm">'+esc(t)+'</span><span class="vv">'+fmtW(mv)+' / '+(goal>0?fmtW(goal):'未设目标')+'</span></div>'+
+    d.innerHTML='<div class="top"><span class="nm">'+esc(t)+' <span class="tag b">'+CAT_NAME[catOf(S,t)]+'</span></span>'+
+      '<span class="vv">'+fmtW(mv)+' / '+(goal>0?fmtW(goal):'未设目标')+'</span></div>'+
       '<div class="bar"><i style="width:'+(p*100).toFixed(1)+'%;background:'+TCOLORS[i%TCOLORS.length]+'"></i></div>'+
       '<div class="h" style="margin:6px 0 0"><span class="mini">今年投入 '+fmtW(put)+'</span><span class="mini">'+(goal>0?Math.round(p*100)+'%':'—')+'</span></div>';
     d.onclick=function(){openTgSheet(t);};
     tl.appendChild(d);
+  });
+
+  var gl=$('#tglList');gl.innerHTML='';
+  tnames(S).forEach(function(t){
+    var d=document.createElement('div');d.className='tglrow';
+    d.innerHTML='<div class="l">'+esc(t)+' <span class="tag b">'+CAT_NAME[catOf(S,t)]+'</span></div>'+
+      '<div class="r"><span class="mini mono">'+fmtW(Number(st.s.mv[t])||0)+'</span><span class="del" data-del-tg="'+esc(t)+'">删除</span></div>';
+    gl.appendChild(d);
+  });
+  Array.prototype.forEach.call(gl.querySelectorAll('[data-del-tg]'),function(b){
+    b.onclick=function(){
+      var n=b.getAttribute('data-del-tg');
+      if(!confirm('删除标的「'+n+'」？\n它现在的市值会留在对应账户里，不会丢。'))return;
+      var mvNow=Number(seriesUpTo(S,curKey()).mv[n])||0;
+      var catNow=catOf(S,n);
+      S.s.targets=S.s.targets.filter(function(x){return x.n!==n;});
+      if(S.s.goals)delete S.s.goals[n];
+      if(mvNow!==0&&catNow){
+        var accs=(S.acc||[]).filter(function(a){return a.auto===catNow;});
+        if(accs.length){
+          var b=balOf(curKey());
+          b.adj[accs[0].id]=(Number(b.adj[accs[0].id])||0)+mvNow;
+        }
+      }
+      persist();renderAll();toast('已删除');
+    };
   });
 }
 
@@ -932,7 +1047,8 @@ function renderDetail(){
 
 /* ---------- 记账面板 ---------- */
 function openPad(){
-  ui.amount='0';ui.cat=null;ui.tg=null;ui.date='';
+  ui.amount='0';ui.cat=null;ui.tg=null;ui.date='';ui.note='';
+  $('#noteIn').value='';
   renderPad();
   $('#pad').classList.add('on');
 }
@@ -958,7 +1074,7 @@ function renderPad(){
   $('#tgWrap').style.display=showTg?'block':'none';
   if(showTg){
     var tl=$('#tgList');tl.innerHTML='';
-    var opts=(ui.cat==='投资')?TARGETS.map(function(t){return {n:t,id:t};}):LIABS;
+    var opts=(ui.cat==='投资')?tnames(S).map(function(t){return {n:t,id:t};}):LIABS;
     opts.forEach(function(o){
       var b=document.createElement('button');
       b.textContent=o.n;b.className=(ui.tg===o.id?'on':'');
@@ -1006,6 +1122,8 @@ function saveEntry(){
   var d=ui.date||todayISO();
   var e={id:uid(),d:d,c:ui.cat,a:Math.round(a*100)/100};
   if(ui.tg)e.tg=ui.tg;
+  var note=$('#noteIn').value.trim();
+  if(note)e.n=note;
   S.e.push(e);
   var mm=d.slice(0,7).split('-');S.s.y=+mm[0];S.s.m=+mm[1];
   persist();closePad();renderAll();
@@ -1022,10 +1140,10 @@ function openTgSheet(t){
   var goal=Number((S.s.goals[t]||{}).goal)||0;
   var mv=Number(s.mv[t])||0;
   var put=investedYear(S,S.s.y,t);
-  sheet('<h3>'+esc(t)+'</h3>'+
+  sheet('<h3>'+esc(t)+' <span class="tag b">'+CAT_NAME[catOf(S,t)]+'</span></h3>'+
     '<div class="field"><label>年度目标</label><input class="inp" id="shGoal" type="number" inputmode="decimal" value="'+(goal||'')+'" placeholder="0"></div>'+
     '<div class="field"><label>当前市值</label><input class="inp" id="shMv" type="number" inputmode="decimal" value="'+mv.toFixed(2)+'"></div>'+
-    '<div class="mini" style="margin-bottom:10px">今年累计投入 '+fmtW(put)+'，市值默认等于累计投入。</div>'+
+    '<div class="mini" style="margin-bottom:10px">今年累计投入 '+fmtW(put)+'；市值默认等于累计投入。</div>'+
     '<button class="sbtn primary" id="shOk">保存</button><button class="sbtn" id="shCancel">取消</button>');
   $('#shCancel').onclick=closeSheet;
   $('#shOk').onclick=function(){
@@ -1036,35 +1154,27 @@ function openTgSheet(t){
     persist();closeSheet();renderAll();toast('已保存');
   };
 }
-function openAccSheet(acc){
-  var v=accValue(S,curKey(),acc);
-  sheet('<h3>编辑账户</h3>'+
-    '<div class="field"><label>名称</label><input class="inp" id="acName" type="text" value="'+esc(acc.n)+'"></div>'+
-    (acc.auto?'<div class="mini" style="margin-bottom:10px">自动账户：金额随记账变化。</div>'
-      :'<div class="field"><label>当前余额</label><input class="inp" id="acVal" type="number" inputmode="decimal" value="'+v.toFixed(2)+'"></div>')+
-    '<button class="sbtn primary" id="acOk">保存</button>'+
-    (acc.auto?'':'<button class="sbtn danger" id="acDel">删除账户</button>')+
-    '<button class="sbtn" id="acCancel">取消</button>');
-  $('#acCancel').onclick=closeSheet;
-  $('#acOk').onclick=function(){
-    var n=$('#acName').value.trim();if(n)acc.n=n;
-    if(!acc.auto){
-      var val=parseFloat($('#acVal').value);
-      if(!isNaN(val)){
-        var cur=accValue(S,curKey(),acc),b=balOf(curKey());
-        b.adj[acc.id]=(Number(b.adj[acc.id])||0)+(val-cur);
-      }
-    }
-    persist();closeSheet();renderAll();toast('已保存');
+function openNewTgSheet(){
+  var opts=CATS_INV.map(function(c){return '<option value="'+c+'">'+CAT_NAME[c]+'</option>';}).join('');
+  sheet('<h3>添加投资标的</h3>'+
+    '<div class="field"><label>名称</label><input class="inp" id="tgName" type="text" placeholder="比如：红利低波"></div>'+
+    '<div class="field"><label>归入哪一类</label><select class="inp" id="tgCat">'+opts+'</select></div>'+
+    '<div class="field"><label>当前市值（可留空）</label><input class="inp" id="tgMv" type="number" inputmode="decimal" placeholder="0.00"></div>'+
+    '<div class="mini" style="margin-bottom:10px">添加后会出现在「记账 → 投资」和投资页面里，并计入对应的资产科目。</div>'+
+    '<button class="sbtn primary" id="tgOk">添加</button><button class="sbtn" id="tgCancel">取消</button>');
+  $('#tgCancel').onclick=closeSheet;
+  $('#tgOk').onclick=function(){
+    var n=$('#tgName').value.trim();
+    if(!n){toast('先起个名字');return;}
+    if(tnames(S).indexOf(n)>=0){toast('已经有同名标的了');return;}
+    var cat=$('#tgCat').value;
+    S.s.targets.push({n:n,cat:cat});
+    var mv=parseFloat($('#tgMv').value);
+    if(mv>0){var b=balOf(curKey());b.mvAdj[n]=(Number(b.mvAdj[n])||0)+mv;}
+    persist();closeSheet();renderAll();toast('已添加 '+n);
   };
-  if(!acc.auto){
-    $('#acDel').onclick=function(){
-      if(!confirm('删除账户「'+acc.n+'」？'))return;
-      S.acc=S.acc.filter(function(a){return a.id!==acc.id;});
-      persist();closeSheet();renderAll();toast('已删除');
-    };
-  }
 }
+function openAccSheet(acc){closeSheet();}
 function openNewAccSheet(g){
   var gname={inv:'投资账户',cash:'现金账户',other:'其他账户'}[g];
   sheet('<h3>添加'+gname+'</h3>'+
@@ -1080,31 +1190,17 @@ function openNewAccSheet(g){
     persist();closeSheet();renderAll();toast('已添加');
   };
 }
-function openLiabSheet(p){
-  var v=Number(seriesUpTo(S,curKey()).liab[p.id])||0;
-  sheet('<h3>调整 '+esc(p.n)+'</h3>'+
-    '<div class="field"><label>当前欠款</label><input class="inp" id="acVal" type="number" inputmode="decimal" value="'+v.toFixed(2)+'"></div>'+
-    '<div class="mini" style="margin-bottom:10px">直接改成真实欠款金额，之后每次还款会自动往下减。</div>'+
-    '<button class="sbtn primary" id="acOk">保存</button><button class="sbtn" id="acCancel">取消</button>');
-  $('#acCancel').onclick=closeSheet;
-  $('#acOk').onclick=function(){
-    var val=parseFloat($('#acVal').value);if(isNaN(val))val=0;
-    var cur=Number(seriesUpTo(S,curKey()).liab[p.id])||0,b=balOf(curKey());
-    b.adj[p.id]=(Number(b.adj[p.id])||0)+(val-cur);
-    persist();closeSheet();renderAll();toast('已更新');
-  };
-}
 function openEntry(id){
   var e=null;
   for(var i=0;i<S.e.length;i++)if(S.e[i].id===id)e=S.e[i];
   if(!e)return;
   var tag='';
   if(e.tg){
-    if(TARGETS.indexOf(e.tg)>=0)tag=e.tg;
+    if(catOf(S,e.tg))tag=e.tg;
     else{var p=LIABS.filter(function(x){return x.id===e.tg;})[0];tag=p?p.n:'';}
   }
   sheet('<h3>'+esc(e.c)+(tag?' · '+esc(tag):'')+'</h3>'+
-    '<div class="mini" style="margin-bottom:6px">'+e.d+'</div>'+
+    '<div class="mini" style="margin-bottom:6px">'+e.d+(e.n?' · '+esc(e.n):'')+'</div>'+
     '<div class="amt" style="font-size:32px;padding:0 0 12px">'+fmt(e.a)+'</div>'+
     '<button class="sbtn danger" id="delE">删除这笔</button><button class="sbtn" id="cx">关闭</button>');
   $('#cx').onclick=closeSheet;
@@ -1115,6 +1211,14 @@ function openEntry(id){
 }
 
 /* ---------- 全局 ---------- */
+function setPane(v){
+  ui.pane=v;
+  Array.prototype.forEach.call(document.querySelectorAll('#assetSeg button'),function(x){
+    x.classList.toggle('on',x.getAttribute('data-v')===v);
+  });
+  document.getElementById('paneAsset').style.display=(v==='asset'?'block':'none');
+  document.getElementById('paneInvest').style.display=(v==='invest'?'block':'none');
+}
 function renderHeader(){
   $('#ym').textContent=S.s.y+'年'+S.s.m+'月';
   $('#nwv').textContent=fmtW(netWorth(S,curKey()).net);
@@ -1131,14 +1235,6 @@ document.querySelectorAll('nav .nb').forEach(function(b){
     window.scrollTo(0,0);
   };
 });
-function setPane(v){
-  ui.pane=v;
-  Array.prototype.forEach.call(document.querySelectorAll('#assetSeg button'),function(x){
-    x.classList.toggle('on',x.getAttribute('data-v')===v);
-  });
-  document.getElementById('paneAsset').style.display=(v==='asset'?'block':'none');
-  document.getElementById('paneInvest').style.display=(v==='invest'?'block':'none');
-}
 Array.prototype.forEach.call(document.querySelectorAll('#assetSeg button'),function(b){
   b.onclick=function(){setPane(b.getAttribute('data-v'));window.scrollTo(0,0);};
 });
@@ -1172,12 +1268,13 @@ $('#btnSave').onclick=saveEntry;
 $('#padClose').onclick=closePad;
 $('#dchip').onclick=function(){var di=$('#dateIn');di.value=ui.date||todayISO();if(di.showPicker){try{di.showPicker();}catch(e){di.click();}}else{di.click();}};
 $('#dateIn').onchange=function(){ui.date=this.value;renderPad();};
+$('#addTg').onclick=openNewTgSheet;
 $('#pm').onclick=function(){S.s.m--;if(S.s.m<1){S.s.m=12;S.s.y--;}persist();renderAll();};
 $('#nm').onclick=function(){S.s.m++;if(S.s.m>12){S.s.m=1;S.s.y++;}persist();renderAll();};
 $('#btnExport').onclick=function(){download('finance-'+curKey()+'.json',JSON.stringify(S,null,2));toast('已导出');};
 $('#btnCsv').onclick=function(){
-  var rows=['日期,类别,标的,金额'];
-  S.e.slice().sort(function(a,b){return a.d<b.d?-1:1;}).forEach(function(e){rows.push([e.d,e.c,e.tg||'',e.a].join(','));});
+  var rows=['日期,类别,标的,金额,备注'];
+  S.e.slice().sort(function(a,b){return a.d<b.d?-1:1;}).forEach(function(e){rows.push([e.d,e.c,e.tg||'',e.a,(e.n||'').replace(/,/g,'，')].join(','));});
   download('finance-'+curKey()+'.csv','\ufeff'+rows.join('\n'),'text/csv;charset=utf-8');toast('已导出 CSV');
 };
 $('#btnImport').onclick=function(){$('#fileIn').click();};
@@ -1189,7 +1286,10 @@ $('#fileIn').onchange=function(){
       var o=JSON.parse(rd.result);
       if(!o||!o.e)throw 0;
       if(!confirm('导入会覆盖当前全部数据，确定？'))return;
-      S=o;if(!S.acc||!S.acc.length)S.acc=defaultAcc();persist();renderAll();toast('导入成功');
+      S=o;
+      if(!S.acc||!S.acc.length)S.acc=defaultAcc();
+      if(!S.s.targets||!S.s.targets.length)S.s.targets=JSON.parse(JSON.stringify(DEF_TARGETS));
+      persist();renderAll();toast('导入成功');
     }catch(e){toast('文件格式不对');}
   };
   rd.readAsText(f);this.value='';
